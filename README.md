@@ -9,3 +9,6 @@ It will ensure:
 - Smooth usability across PC and mobile devices.
 - Secure and scalable backend architecture.
 - Integration with existing Ad Dawah Ilallah digital services (e.g., Dawah ilallah App,Nibrash, Al-Itisam).
+
+
+ER Diagram link of the database: https://dbdiagram.io/d/Ad-Dawah-Ilallah-692181cc228c5bbc1a02b493
