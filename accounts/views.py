@@ -1,7 +1,10 @@
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
+from rest_framework.filters import OrderingFilter
 from rest_framework.response import Response
 
+from accounts.filters import UserFilter
 from accounts.models import User
 from accounts.serializers import UserSerializer
 
@@ -9,6 +12,10 @@ from accounts.serializers import UserSerializer
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all().order_by("-id")
     serializer_class = UserSerializer
+
+    filter_backends = [DjangoFilterBackend, OrderingFilter]
+    filterset_class = UserFilter
+    ordering_fields = ["id", "username", "full_name", "created_at"]
 
     # ------------------------------------------
     # DELETE MULTIPLE USERS
