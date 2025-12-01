@@ -4,9 +4,9 @@ from rest_framework.decorators import action
 from rest_framework.filters import OrderingFilter
 from rest_framework.response import Response
 
-from accounts.filters import UserFilter
-from accounts.models import User
-from accounts.serializers import UserSerializer
+from accounts.filters import UserFilter, PermissionFilter, RoleFilter
+from accounts.models import User, Role, Permission
+from accounts.serializers import UserSerializer, RoleSerializer, PermissionSerializer
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -36,3 +36,36 @@ class UserViewSet(viewsets.ModelViewSet):
             {"deleted": deleted_count},
             status=status.HTTP_200_OK
         )
+
+
+class RoleViewSet(viewsets.ModelViewSet):
+    queryset = Role.objects.all().order_by("name")
+    serializer_class = RoleSerializer
+
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = RoleFilter
+
+    @action(detail=False, methods=["post"])
+    def bulk_delete(self, request):
+        ids = request.data.get("ids", [])
+
+        if not ids or not isinstance(ids, list):
+            return Response(
+                {"detail": "Provide a list of role IDs."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        deleted_count, _ = Role.objects.filter(id__in=ids).delete()
+
+        return Response(
+            {"deleted": deleted_count},
+            status=status.HTTP_200_OK
+        )
+
+
+class PermissionViewSet(viewsets.ModelViewSet):
+    queryset = Permission.objects.all().order_by("module", "code")
+    serializer_class = PermissionSerializer
+
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = PermissionFilter

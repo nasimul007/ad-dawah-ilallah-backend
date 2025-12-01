@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from accounts.models import User, Role
+from accounts.models import User, Role, Permission
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -67,3 +67,57 @@ class UserSerializer(serializers.ModelSerializer):
             instance.roles.set(roles)
 
         return instance
+
+
+class RoleSerializer(serializers.ModelSerializer):
+    permissions = serializers.PrimaryKeyRelatedField(
+        queryset=Permission.objects.all(),
+        many=True,
+        required=False
+    )
+
+    class Meta:
+        model = Role
+        fields = [
+            "id",
+            "name",
+            "description",
+            "permissions",
+            "created_at",
+            "updated_at",
+        ]
+        read_only_fields = ["created_at", "updated_at"]
+
+    def create(self, validated_data):
+        perms = validated_data.pop("permissions", [])
+        role = Role.objects.create(**validated_data)
+        if perms:
+            role.permissions.set(perms)
+        return role
+
+    def update(self, instance, validated_data):
+        perms = validated_data.pop("permissions", None)
+
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+
+        instance.save()
+
+        if perms is not None:
+            instance.permissions.set(perms)
+
+        return instance
+
+
+class PermissionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Permission
+        fields = [
+            "id",
+            "code",
+            "module",
+            "description",
+            "created_at",
+            "updated_at",
+        ]
+        read_only_fields = ["created_at", "updated_at"]
