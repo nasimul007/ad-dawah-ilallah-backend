@@ -13,7 +13,7 @@ class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all().order_by("-id")
     serializer_class = UserSerializer
 
-    filter_backends = [DjangoFilterBackend, OrderingFilter]
+    filter_backends = [OrderingFilter]
     filterset_class = UserFilter
     ordering_fields = ["id", "username", "full_name", "created_at"]
 
@@ -42,8 +42,9 @@ class RoleViewSet(viewsets.ModelViewSet):
     queryset = Role.objects.all().order_by("name")
     serializer_class = RoleSerializer
 
-    filter_backends = [DjangoFilterBackend]
     filterset_class = RoleFilter
+    filter_backends = [OrderingFilter]
+    ordering_fields = ["id", "name"]
 
     @action(detail=False, methods=["post"])
     def bulk_delete(self, request):
@@ -66,6 +67,4 @@ class RoleViewSet(viewsets.ModelViewSet):
 class PermissionViewSet(viewsets.ModelViewSet):
     queryset = Permission.objects.all().order_by("module", "code")
     serializer_class = PermissionSerializer
-
-    filter_backends = [DjangoFilterBackend]
     filterset_class = PermissionFilter
