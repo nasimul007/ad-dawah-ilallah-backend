@@ -1,0 +1,189 @@
+[
+  {
+    "model": "accounts.permission",
+    "pk": 1,
+    "fields": {
+      "code": "SUPER_ADMIN",
+      "module": "super_admin",
+      "description": "Have all the access of the system",
+      "created_at": "2025-12-02T00:00:00Z",
+      "updated_at": "2025-12-02T00:00:00Z"
+    }
+  },
+  {
+    "model": "accounts.permission",
+    "pk": 2,
+    "fields": {
+      "code": "USER_MANAGEMENT",
+      "module": "Users",
+      "description": "User Create, Update, Delete, List, Details",
+      "created_at": "2025-12-02T00:00:00Z",
+      "updated_at": "2025-12-02T00:00:00Z"
+    }
+  },
+  {
+    "model": "accounts.permission",
+    "pk": 3,
+    "fields": {
+      "code": "BILLING_VIEW",
+      "module": "Billing",
+      "description": "View billing information and invoices",
+      "created_at": "2025-12-02T00:00:00Z",
+      "updated_at": "2025-12-02T00:00:00Z"
+    }
+  },
+  {
+    "model": "accounts.permission",
+    "pk": 4,
+    "fields": {
+      "code": "BILLING_MANAGE_INVOICES",
+      "module": "Billing",
+      "description": "Create and update invoices",
+      "created_at": "2025-12-02T00:00:00Z",
+      "updated_at": "2025-12-02T00:00:00Z"
+    }
+  },
+  {
+    "model": "accounts.permission",
+    "pk": 5,
+    "fields": {
+      "code": "BILLING_RECORD_PAYMENTS",
+      "module": "Billing",
+      "description": "Record and manage payments",
+      "created_at": "2025-12-02T00:00:00Z",
+      "updated_at": "2025-12-02T00:00:00Z"
+    }
+  },
+  {
+    "model": "accounts.permission",
+    "pk": 6,
+    "fields": {
+      "code": "COURSES_VIEW",
+      "module": "courses",
+      "description": "View courses and offerings",
+      "created_at": "2025-12-02T00:00:00Z",
+      "updated_at": "2025-12-02T00:00:00Z"
+    }
+  },
+  {
+    "model": "accounts.permission",
+    "pk": 7,
+    "fields": {
+      "code": "COURSES_MANAGE",
+      "module": "courses",
+      "description": "Create/update/delete courses",
+      "created_at": "2025-12-02T00:00:00Z",
+      "updated_at": "2025-12-02T00:00:00Z"
+    }
+  },
+  {
+    "model": "accounts.permission",
+    "pk": 8,
+    "fields": {
+      "code": "COURSES_OFFER",
+      "module": "courses",
+      "description": "Offer new course batches/sections",
+      "created_at": "2025-12-02T00:00:00Z",
+      "updated_at": "2025-12-02T00:00:00Z"
+    }
+  },
+  {
+    "model": "accounts.permission",
+    "pk": 9,
+    "fields": {
+      "code": "CLASS_MANAGE",
+      "module": "classes",
+      "description": "Manage class schedules, upload materials for classes and courses",
+      "created_at": "2025-12-02T00:00:00Z",
+      "updated_at": "2025-12-02T00:00:00Z"
+    }
+  },
+  {
+    "model": "accounts.permission",
+    "pk": 10,
+    "fields": {
+      "code": "CLASS_MATERIALS_MANAGE",
+      "module": "materials",
+      "description": "Upload materials for classes and courses",
+      "created_at": "2025-12-02T00:00:00Z",
+      "updated_at": "2025-12-02T00:00:00Z"
+    }
+  },
+  {
+    "model": "accounts.permission",
+    "pk": 11,
+    "fields": {
+      "code": "EXAM_MANAGE",
+      "module": "exams",
+      "description": "Create, update, view and manage exams/assessments",
+      "created_at": "2025-12-02T00:00:00Z",
+      "updated_at": "2025-12-02T00:00:00Z"
+    }
+  },
+  {
+    "model": "accounts.permission",
+    "pk": 12,
+    "fields": {
+      "code": "ATTENDANCE_MANAGE",
+      "module": "attendance",
+      "description": "Mark attendance for classes, View attendance records",
+      "created_at": "2025-12-02T00:00:00Z",
+      "updated_at": "2025-12-02T00:00:00Z"
+    }
+  },
+  {
+    "model": "accounts.permission",
+    "pk": 13,
+    "fields": {
+      "code": "ASSIGNMENTS_MANAGE",
+      "module": "assignments",
+      "description": "Create, Update, Delete, View assignments and HWs",
+      "created_at": "2025-12-02T00:00:00Z",
+      "updated_at": "2025-12-02T00:00:00Z"
+    }
+  },
+  {
+    "model": "accounts.permission",
+    "pk": 14,
+    "fields": {
+      "code": "ASSIGNMENTS_GRADE",
+      "module": "assignments",
+      "description": "Grade assignments and homework",
+      "created_at": "2025-12-02T00:00:00Z",
+      "updated_at": "2025-12-02T00:00:00Z"
+    }
+  },
+  {
+    "model": "accounts.permission",
+    "pk": 15,
+    "fields": {
+      "code": "EXAMS_GRADE",
+      "module": "exams",
+      "description": "Grade exams/assessments",
+      "created_at": "2025-12-02T00:00:00Z",
+      "updated_at": "2025-12-02T00:00:00Z"
+    }
+  },
+  {
+    "model": "accounts.permission",
+    "pk": 16,
+    "fields": {
+      "code": "SYSTEM_VIEW_AUDIT_LOGS",
+      "module": "system",
+      "description": "View audit logs and sensitive reports",
+      "created_at": "2025-12-02T00:00:00Z",
+      "updated_at": "2025-12-02T00:00:00Z"
+    }
+  },
+  {
+    "model": "accounts.permission",
+    "pk": 17,
+    "fields": {
+      "code": "STUDENT",
+      "module": "student",
+      "description": "Only view resources assigned to the user",
+      "created_at": "2025-12-02T00:00:00Z",
+      "updated_at": "2025-12-02T00:00:00Z"
+    }
+  }
+]
