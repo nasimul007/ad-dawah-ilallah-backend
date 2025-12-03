@@ -2,6 +2,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.filters import OrderingFilter
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from accounts.filters import UserFilter, PermissionFilter, RoleFilter
@@ -16,6 +17,12 @@ class UserViewSet(viewsets.ModelViewSet):
     filter_backends = [OrderingFilter]
     filterset_class = UserFilter
     ordering_fields = ["id", "username", "full_name", "created_at"]
+
+    # Endpoint to get the current authenticated user
+    @action(detail=False, methods=["get"], permission_classes=[IsAuthenticated])
+    def me(self, request):
+        serializer = self.get_serializer(request.user)
+        return Response(serializer.data)
 
     # ------------------------------------------
     # DELETE MULTIPLE USERS
