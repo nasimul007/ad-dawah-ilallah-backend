@@ -12,3 +12,19 @@ It will ensure:
 
 
 ER Diagram link of the database: https://dbdiagram.io/d/Ad-Dawah-Ilallah-692181cc228c5bbc1a02b493
+
+
+## System Requirements:
+- *`Ubuntu v20.04 LTS or higher (like 24.04 LTS)`*
+- *`Python v3.11.x or higher (like 3.12.x)`*<sup>`python3.11` for ubuntu `20.04 LST` and `python3.12` for Ubuntu `24.04 LTS`</sup>
+- *`Django v5.2 LTS`*
+- *`PostgreSQL`*<sup>`v16.x (recommended)`</sup>
+
+## Installation
+- **Clone the repository:** `git clone https://github.com/nasimul007/ad-dawah-ilallah-backend`
+- **Create virtual environment:** `virtualenv -p python3.x <env_name>`
+- **Install dependencies:** `pip install -r requirements.txt`
+- **Setup .env:** `Create .env file and copy all variable from .env.example and put respective value`
+- **Database migrations:**` python manage.py migrate`
+- **Load initial data (optional):** `python manage.py loaddata import_data/*.json`
+- **Start the Django development server:** `python manage.py runserver`
