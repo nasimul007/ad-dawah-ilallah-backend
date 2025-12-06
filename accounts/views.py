@@ -79,3 +79,8 @@ class PermissionViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Permission.objects.all().order_by("module", "code")
     serializer_class = PermissionSerializer
     filterset_class = PermissionFilter
+    hidden_permission_codes = ["SUPER_ADMIN"]
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        return qs.exclude(code__in=self.hidden_permission_codes)
