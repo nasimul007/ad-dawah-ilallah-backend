@@ -71,7 +71,11 @@ class RoleViewSet(viewsets.ModelViewSet):
         )
 
 
-class PermissionViewSet(viewsets.ModelViewSet):
+class PermissionViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    Read-only API for permissions.
+    Only supports: list (GET) and retrieve (GET /{id}/)
+    """
     queryset = Permission.objects.all().order_by("module", "code")
     serializer_class = PermissionSerializer
     filterset_class = PermissionFilter
