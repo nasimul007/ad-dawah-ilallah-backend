@@ -3,9 +3,9 @@
     "model": "accounts.permission",
     "pk": 1,
     "fields": {
-      "code": "SUPER_ADMIN",
-      "module": "super_admin",
-      "description": "Have all the access of the system",
+      "code": "SYSTEM_VIEW_AUDIT_LOGS",
+      "module": "system",
+      "description": "View audit logs and sensitive reports",
       "created_at": "2025-12-02T00:00:00Z",
       "updated_at": "2025-12-02T00:00:00Z"
     }
@@ -160,28 +160,6 @@
       "code": "EXAMS_GRADE",
       "module": "exams",
       "description": "Grade exams/assessments",
-      "created_at": "2025-12-02T00:00:00Z",
-      "updated_at": "2025-12-02T00:00:00Z"
-    }
-  },
-  {
-    "model": "accounts.permission",
-    "pk": 16,
-    "fields": {
-      "code": "SYSTEM_VIEW_AUDIT_LOGS",
-      "module": "system",
-      "description": "View audit logs and sensitive reports",
-      "created_at": "2025-12-02T00:00:00Z",
-      "updated_at": "2025-12-02T00:00:00Z"
-    }
-  },
-  {
-    "model": "accounts.permission",
-    "pk": 17,
-    "fields": {
-      "code": "STUDENT",
-      "module": "student",
-      "description": "Only view resources assigned to the user",
       "created_at": "2025-12-02T00:00:00Z",
       "updated_at": "2025-12-02T00:00:00Z"
     }
