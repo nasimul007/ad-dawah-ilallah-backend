@@ -7,6 +7,7 @@ from rest_framework.response import Response
 
 from accounts.filters import UserFilter, PermissionFilter, RoleFilter
 from accounts.models import User, Role, Permission
+from accounts.permissions import HasPermissionCode
 from accounts.serializers import UserSerializer, RoleSerializer, PermissionSerializer
 
 
@@ -17,6 +18,9 @@ class UserViewSet(viewsets.ModelViewSet):
     filter_backends = [OrderingFilter]
     filterset_class = UserFilter
     ordering_fields = ["id", "username", "full_name", "created_at"]
+
+    required_permission = "USER_MANAGEMENT"
+    permission_classes = [IsAuthenticated, HasPermissionCode]
 
     # Endpoint to get the current authenticated user
     @action(detail=False, methods=["get"], permission_classes=[IsAuthenticated])
@@ -52,6 +56,9 @@ class RoleViewSet(viewsets.ModelViewSet):
     filterset_class = RoleFilter
     filter_backends = [OrderingFilter]
     ordering_fields = ["id", "name"]
+
+    required_permission = "USER_MANAGEMENT"
+    permission_classes = [IsAuthenticated, HasPermissionCode]
 
     @action(detail=False, methods=["post"])
     def bulk_delete(self, request):
