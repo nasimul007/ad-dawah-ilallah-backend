@@ -62,6 +62,7 @@ INSTALLED_APPS = [
 
     # Project apps
     'accounts',
+    'forms',
 ]
 
 REST_FRAMEWORK = {
