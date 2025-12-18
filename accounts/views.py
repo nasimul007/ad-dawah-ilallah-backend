@@ -13,7 +13,6 @@ from accounts.serializers import UserSerializer, RoleSerializer, PermissionSeria
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all().order_by("-id")
     serializer_class = UserSerializer
-
     filter_backends = [OrderingFilter]
     filterset_class = UserFilter
     ordering_fields = ["id", "username", "full_name", "created_at"]

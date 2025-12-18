@@ -59,6 +59,7 @@ INSTALLED_APPS = [
     # Third-party
     'rest_framework',
     'django_filters',
+    'drf_spectacular',
 
     # Project apps
     'accounts',
@@ -76,6 +77,7 @@ REST_FRAMEWORK = {
     "DEFAULT_FILTER_BACKENDS": [
         "django_filters.rest_framework.DjangoFilterBackend",
     ],
+     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
 
 SIMPLE_JWT = {
