@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  web:
+    image: di
+    container_name: ad_dawah_web
+    command: >
+      sh -c "python manage.py migrate &&
+             python manage.py runserver 0.0.0.0:8000"
+    volumes:
+      - .:/app
+      - static_volume:/app/static
+      - media_volume:/app/media
+    ports:
+      - "8000:8000"
+    environment:
+      - DB_NAME=${DB_NAME:-ad_dawah}
+      - DB_USER=${DB_USER:-ad_dawah}
+      - DB_PASSWORD=${DB_PASSWORD:-123456}
+      - DB_HOST=${DB_HOST:-localhost}
+      - DB_PORT=${DB_PORT:-5432}
+      - DEBUG=${DEBUG:-True}
+    restart: unless-stopped
+
+volumes:
+  static_volume:
+  media_volume:
