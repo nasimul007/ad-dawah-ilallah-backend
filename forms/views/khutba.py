@@ -22,3 +22,4 @@ class KhutbaRegistrationViewSet(viewsets.ModelViewSet):
             permission_classes = [IsAdminUser]
         return [permission() for permission in permission_classes]
 
+
