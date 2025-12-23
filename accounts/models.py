@@ -44,6 +44,30 @@ class User(AbstractBaseUser, PermissionsMixin):
     def __str__(self):
         return f"{self.full_name} ({self.username})"
 
+    @property
+    def is_super_admin(self) -> bool:
+        """
+        Treat either Django superuser OR having the 'super_admin' role
+        as full-access super admin.
+        """
+        if self.is_superuser:
+            return True
+
+        return self.roles.filter(name="super_admin").exists()
+
+    def has_permission_code(self, code: str) -> bool:
+        """
+        Check if user has a specific permission code via any of their roles.
+        Super admin always returns True.
+        """
+        if not self.is_active:
+            return False
+
+        if self.is_super_admin:
+            return True
+
+        return self.roles.filter(permissions__code=code).exists()
+
 
 class Role(models.Model):
     name = models.CharField(max_length=50, unique=True)
