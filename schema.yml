@@ -1,0 +1,2813 @@
+openapi: 3.0.3
+info:
+  title: ''
+  version: 0.0.0
+paths:
+  /api/accounts/auth/login/:
+    post:
+      operationId: accounts_auth_login_create
+      description: |-
+        Takes a set of user credentials and returns an access and refresh JSON web
+        token pair to prove the authentication of those credentials.
+      tags:
+      - accounts
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdDawahTokenObtainPair'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AdDawahTokenObtainPair'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AdDawahTokenObtainPair'
+        required: true
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdDawahTokenObtainPair'
+          description: ''
+  /api/accounts/auth/refresh/:
+    post:
+      operationId: accounts_auth_refresh_create
+      description: |-
+        Takes a refresh type JSON web token and returns an access type JSON web
+        token if the refresh token is valid.
+      tags:
+      - accounts
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+        required: true
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenRefresh'
+          description: ''
+  /api/accounts/permissions/:
+    get:
+      operationId: accounts_permissions_list
+      description: |-
+        Read-only API for permissions.
+        Only supports: list (GET) and retrieve (GET /{id}/)
+      parameters:
+      - in: query
+        name: module
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: search
+        schema:
+          type: string
+      tags:
+      - accounts
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedPermissionList'
+          description: ''
+  /api/accounts/permissions/{id}/:
+    get:
+      operationId: accounts_permissions_retrieve
+      description: |-
+        Read-only API for permissions.
+        Only supports: list (GET) and retrieve (GET /{id}/)
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this permission.
+        required: true
+      tags:
+      - accounts
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Permission'
+          description: ''
+  /api/accounts/roles/:
+    get:
+      operationId: accounts_roles_list
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - accounts
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedRoleList'
+          description: ''
+    post:
+      operationId: accounts_roles_create
+      tags:
+      - accounts
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Role'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Role'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Role'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Role'
+          description: ''
+  /api/accounts/roles/{id}/:
+    get:
+      operationId: accounts_roles_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this role.
+        required: true
+      tags:
+      - accounts
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Role'
+          description: ''
+    put:
+      operationId: accounts_roles_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this role.
+        required: true
+      tags:
+      - accounts
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Role'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Role'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Role'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Role'
+          description: ''
+    patch:
+      operationId: accounts_roles_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this role.
+        required: true
+      tags:
+      - accounts
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedRole'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedRole'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedRole'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Role'
+          description: ''
+    delete:
+      operationId: accounts_roles_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this role.
+        required: true
+      tags:
+      - accounts
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/accounts/roles/bulk_delete/:
+    post:
+      operationId: accounts_roles_bulk_delete_create
+      tags:
+      - accounts
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Role'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Role'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Role'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Role'
+          description: ''
+  /api/accounts/users/:
+    get:
+      operationId: accounts_users_list
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - accounts
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedUserList'
+          description: ''
+    post:
+      operationId: accounts_users_create
+      tags:
+      - accounts
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/User'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/User'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+  /api/accounts/users/{id}/:
+    get:
+      operationId: accounts_users_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this user.
+        required: true
+      tags:
+      - accounts
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+    put:
+      operationId: accounts_users_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this user.
+        required: true
+      tags:
+      - accounts
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/User'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/User'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+    patch:
+      operationId: accounts_users_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this user.
+        required: true
+      tags:
+      - accounts
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedUser'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedUser'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedUser'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+    delete:
+      operationId: accounts_users_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this user.
+        required: true
+      tags:
+      - accounts
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/accounts/users/bulk_delete/:
+    post:
+      operationId: accounts_users_bulk_delete_create
+      tags:
+      - accounts
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/User'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/User'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+  /api/accounts/users/me/:
+    get:
+      operationId: accounts_users_me_retrieve
+      tags:
+      - accounts
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+  /api/forms/al-itisam-registrations/:
+    get:
+      operationId: forms_al_itisam_registrations_list
+      description: |-
+        ViewSet for Al Itisam Registration.
+        POST (create) is public, other operations require admin authentication.
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - forms
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedAlItisamRegistrationList'
+          description: ''
+    post:
+      operationId: forms_al_itisam_registrations_create
+      description: |-
+        ViewSet for Al Itisam Registration.
+        POST (create) is public, other operations require admin authentication.
+      tags:
+      - forms
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AlItisamRegistration'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AlItisamRegistration'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AlItisamRegistration'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AlItisamRegistration'
+          description: ''
+  /api/forms/al-itisam-registrations/{id}/:
+    get:
+      operationId: forms_al_itisam_registrations_retrieve
+      description: |-
+        ViewSet for Al Itisam Registration.
+        POST (create) is public, other operations require admin authentication.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Al Itisam Registration.
+        required: true
+      tags:
+      - forms
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AlItisamRegistration'
+          description: ''
+    put:
+      operationId: forms_al_itisam_registrations_update
+      description: |-
+        ViewSet for Al Itisam Registration.
+        POST (create) is public, other operations require admin authentication.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Al Itisam Registration.
+        required: true
+      tags:
+      - forms
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AlItisamRegistration'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AlItisamRegistration'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AlItisamRegistration'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AlItisamRegistration'
+          description: ''
+    patch:
+      operationId: forms_al_itisam_registrations_partial_update
+      description: |-
+        ViewSet for Al Itisam Registration.
+        POST (create) is public, other operations require admin authentication.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Al Itisam Registration.
+        required: true
+      tags:
+      - forms
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedAlItisamRegistration'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedAlItisamRegistration'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedAlItisamRegistration'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AlItisamRegistration'
+          description: ''
+    delete:
+      operationId: forms_al_itisam_registrations_destroy
+      description: |-
+        ViewSet for Al Itisam Registration.
+        POST (create) is public, other operations require admin authentication.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Al Itisam Registration.
+        required: true
+      tags:
+      - forms
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/forms/khutba-registrations/:
+    get:
+      operationId: forms_khutba_registrations_list
+      description: |-
+        ViewSet for Khutba Registration.
+        POST (create) is public, other operations require admin authentication.
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - forms
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedKhutbaRegistrationList'
+          description: ''
+    post:
+      operationId: forms_khutba_registrations_create
+      description: |-
+        ViewSet for Khutba Registration.
+        POST (create) is public, other operations require admin authentication.
+      tags:
+      - forms
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/KhutbaRegistration'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/KhutbaRegistration'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/KhutbaRegistration'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KhutbaRegistration'
+          description: ''
+  /api/forms/khutba-registrations/{id}/:
+    get:
+      operationId: forms_khutba_registrations_retrieve
+      description: |-
+        ViewSet for Khutba Registration.
+        POST (create) is public, other operations require admin authentication.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Khutba Registration.
+        required: true
+      tags:
+      - forms
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KhutbaRegistration'
+          description: ''
+    put:
+      operationId: forms_khutba_registrations_update
+      description: |-
+        ViewSet for Khutba Registration.
+        POST (create) is public, other operations require admin authentication.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Khutba Registration.
+        required: true
+      tags:
+      - forms
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/KhutbaRegistration'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/KhutbaRegistration'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/KhutbaRegistration'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KhutbaRegistration'
+          description: ''
+    patch:
+      operationId: forms_khutba_registrations_partial_update
+      description: |-
+        ViewSet for Khutba Registration.
+        POST (create) is public, other operations require admin authentication.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Khutba Registration.
+        required: true
+      tags:
+      - forms
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedKhutbaRegistration'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedKhutbaRegistration'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedKhutbaRegistration'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KhutbaRegistration'
+          description: ''
+    delete:
+      operationId: forms_khutba_registrations_destroy
+      description: |-
+        ViewSet for Khutba Registration.
+        POST (create) is public, other operations require admin authentication.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Khutba Registration.
+        required: true
+      tags:
+      - forms
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/forms/mosque-course-registrations/:
+    get:
+      operationId: forms_mosque_course_registrations_list
+      description: |-
+        ViewSet for Mosque Course Registration.
+        POST (create) is public, other operations require admin authentication.
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - forms
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedMosqueCourseRegistrationList'
+          description: ''
+    post:
+      operationId: forms_mosque_course_registrations_create
+      description: |-
+        ViewSet for Mosque Course Registration.
+        POST (create) is public, other operations require admin authentication.
+      tags:
+      - forms
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MosqueCourseRegistration'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/MosqueCourseRegistration'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/MosqueCourseRegistration'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MosqueCourseRegistration'
+          description: ''
+  /api/forms/mosque-course-registrations/{id}/:
+    get:
+      operationId: forms_mosque_course_registrations_retrieve
+      description: |-
+        ViewSet for Mosque Course Registration.
+        POST (create) is public, other operations require admin authentication.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Mosque Course Registration.
+        required: true
+      tags:
+      - forms
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MosqueCourseRegistration'
+          description: ''
+    put:
+      operationId: forms_mosque_course_registrations_update
+      description: |-
+        ViewSet for Mosque Course Registration.
+        POST (create) is public, other operations require admin authentication.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Mosque Course Registration.
+        required: true
+      tags:
+      - forms
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MosqueCourseRegistration'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/MosqueCourseRegistration'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/MosqueCourseRegistration'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MosqueCourseRegistration'
+          description: ''
+    patch:
+      operationId: forms_mosque_course_registrations_partial_update
+      description: |-
+        ViewSet for Mosque Course Registration.
+        POST (create) is public, other operations require admin authentication.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Mosque Course Registration.
+        required: true
+      tags:
+      - forms
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedMosqueCourseRegistration'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedMosqueCourseRegistration'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedMosqueCourseRegistration'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MosqueCourseRegistration'
+          description: ''
+    delete:
+      operationId: forms_mosque_course_registrations_destroy
+      description: |-
+        ViewSet for Mosque Course Registration.
+        POST (create) is public, other operations require admin authentication.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Mosque Course Registration.
+        required: true
+      tags:
+      - forms
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/forms/program-registrations/:
+    get:
+      operationId: forms_program_registrations_list
+      description: |-
+        ViewSet for Program Registration.
+        POST (create) is public, other operations require admin authentication.
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - forms
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedProgramRegistrationList'
+          description: ''
+    post:
+      operationId: forms_program_registrations_create
+      description: |-
+        ViewSet for Program Registration.
+        POST (create) is public, other operations require admin authentication.
+      tags:
+      - forms
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProgramRegistration'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ProgramRegistration'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ProgramRegistration'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProgramRegistration'
+          description: ''
+  /api/forms/program-registrations/{id}/:
+    get:
+      operationId: forms_program_registrations_retrieve
+      description: |-
+        ViewSet for Program Registration.
+        POST (create) is public, other operations require admin authentication.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Program Registration.
+        required: true
+      tags:
+      - forms
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProgramRegistration'
+          description: ''
+    put:
+      operationId: forms_program_registrations_update
+      description: |-
+        ViewSet for Program Registration.
+        POST (create) is public, other operations require admin authentication.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Program Registration.
+        required: true
+      tags:
+      - forms
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProgramRegistration'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ProgramRegistration'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ProgramRegistration'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProgramRegistration'
+          description: ''
+    patch:
+      operationId: forms_program_registrations_partial_update
+      description: |-
+        ViewSet for Program Registration.
+        POST (create) is public, other operations require admin authentication.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Program Registration.
+        required: true
+      tags:
+      - forms
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedProgramRegistration'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedProgramRegistration'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedProgramRegistration'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProgramRegistration'
+          description: ''
+    delete:
+      operationId: forms_program_registrations_destroy
+      description: |-
+        ViewSet for Program Registration.
+        POST (create) is public, other operations require admin authentication.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Program Registration.
+        required: true
+      tags:
+      - forms
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/forms/quran-deen-course-registrations/:
+    get:
+      operationId: forms_quran_deen_course_registrations_list
+      description: |-
+        ViewSet for Quran and Deen Course Registration.
+        POST (create) is public, other operations require admin authentication.
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - forms
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedQuranAndDeenCourseList'
+          description: ''
+    post:
+      operationId: forms_quran_deen_course_registrations_create
+      description: |-
+        ViewSet for Quran and Deen Course Registration.
+        POST (create) is public, other operations require admin authentication.
+      tags:
+      - forms
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QuranAndDeenCourse'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/QuranAndDeenCourse'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/QuranAndDeenCourse'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuranAndDeenCourse'
+          description: ''
+  /api/forms/quran-deen-course-registrations/{id}/:
+    get:
+      operationId: forms_quran_deen_course_registrations_retrieve
+      description: |-
+        ViewSet for Quran and Deen Course Registration.
+        POST (create) is public, other operations require admin authentication.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Quran and Deen Course
+          Registration.
+        required: true
+      tags:
+      - forms
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuranAndDeenCourse'
+          description: ''
+    put:
+      operationId: forms_quran_deen_course_registrations_update
+      description: |-
+        ViewSet for Quran and Deen Course Registration.
+        POST (create) is public, other operations require admin authentication.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Quran and Deen Course
+          Registration.
+        required: true
+      tags:
+      - forms
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QuranAndDeenCourse'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/QuranAndDeenCourse'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/QuranAndDeenCourse'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuranAndDeenCourse'
+          description: ''
+    patch:
+      operationId: forms_quran_deen_course_registrations_partial_update
+      description: |-
+        ViewSet for Quran and Deen Course Registration.
+        POST (create) is public, other operations require admin authentication.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Quran and Deen Course
+          Registration.
+        required: true
+      tags:
+      - forms
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedQuranAndDeenCourse'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedQuranAndDeenCourse'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedQuranAndDeenCourse'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuranAndDeenCourse'
+          description: ''
+    delete:
+      operationId: forms_quran_deen_course_registrations_destroy
+      description: |-
+        ViewSet for Quran and Deen Course Registration.
+        POST (create) is public, other operations require admin authentication.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Quran and Deen Course
+          Registration.
+        required: true
+      tags:
+      - forms
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+components:
+  schemas:
+    AdDawahTokenObtainPair:
+      type: object
+      properties:
+        username:
+          type: string
+          writeOnly: true
+        password:
+          type: string
+          writeOnly: true
+      required:
+      - password
+      - username
+    AffiliatedJamiahSalafiyyahEnum:
+      enum:
+      - হ্যাঁ
+      - না
+      type: string
+      description: |-
+        * `হ্যাঁ` - হ্যাঁ
+        * `না` - না
+    AlItisamRegistration:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        your_name:
+          type: string
+          maxLength: 255
+        email:
+          type: string
+          format: email
+          maxLength: 254
+        mobile_number:
+          type: string
+          maxLength: 20
+        village_locality_institution:
+          type: string
+          nullable: true
+          title: Village/Locality/Institution
+          maxLength: 255
+        post:
+          type: string
+          nullable: true
+          maxLength: 255
+        upazila:
+          type: string
+          nullable: true
+          maxLength: 100
+        district:
+          nullable: true
+          oneOf:
+          - $ref: '#/components/schemas/DistrictEnum'
+          - $ref: '#/components/schemas/BlankEnum'
+          - $ref: '#/components/schemas/NullEnum'
+        how_many_copies:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+          title: How many copies will you take?
+          description: Number of copies
+        delivery_medium:
+          allOf:
+          - $ref: '#/components/schemas/DeliveryMediumEnum'
+          title: Through which medium will you take?
+          description: |-
+            Post or Courier
+
+            * `পোস্ট` - পোস্ট
+            * `কুরিয়ার` - কুরিয়ার
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - delivery_medium
+      - email
+      - how_many_copies
+      - id
+      - mobile_number
+      - updated_at
+      - your_name
+    AttendSalafiConferencesEnum:
+      enum:
+      - হ্যাঁ
+      - না
+      type: string
+      description: |-
+        * `হ্যাঁ` - হ্যাঁ
+        * `না` - না
+    BlankEnum:
+      enum:
+      - ''
+    CourseSourceEnum:
+      enum:
+      - ফেসবুক পোস্টের মাধ্যমে
+      - বক্তব্যের মাধ্যমে
+      - পরিচিত ব্যক্তির মাধ্যমে
+      - অন্যান্য
+      type: string
+      description: |-
+        * `ফেসবুক পোস্টের মাধ্যমে` - ফেসবুক পোস্টের মাধ্যমে
+        * `বক্তব্যের মাধ্যমে` - বক্তব্যের মাধ্যমে
+        * `পরিচিত ব্যক্তির মাধ্যমে` - পরিচিত ব্যক্তির মাধ্যমে
+        * `অন্যান্য` - অন্যান্য
+    DeliveryMediumEnum:
+      enum:
+      - পোস্ট
+      - কুরিয়ার
+      type: string
+      description: |-
+        * `পোস্ট` - পোস্ট
+        * `কুরিয়ার` - কুরিয়ার
+    DistrictEnum:
+      enum:
+      - কক্সবাজার
+      - কুড়িগ্রাম
+      - কুষ্টিয়া
+      - কিশোরগঞ্জ
+      - খাগড়াছড়ি
+      - খুলনা
+      - গাইবান্ধা
+      - গাজীপুর
+      - গোপালগঞ্জ
+      - চট্টগ্রাম
+      - চাঁদপুর
+      - চাঁপাইনবাবগঞ্জ
+      - চুয়াডাঙ্গা
+      - ঝালকাঠি
+      - ঝিনাইদহ
+      - টাঙ্গাইল
+      - ঠাকুরগাঁও
+      - দিনাজপুর
+      - ঢাকা
+      - নওগাঁ
+      - নাটোর
+      - নরসিংদী
+      - নারায়ণগঞ্জ
+      - নীলফামারী
+      - নড়াইল
+      - পাবনা
+      - পটুয়াখালী
+      - পিরোজপুর
+      - পঞ্চগড়
+      - ফেনী
+      - ফরিদপুর
+      - বাগেরহাট
+      - বরগুনা
+      - বরিশাল
+      - বগুড়া
+      - বান্দরবান
+      - ব্রাহ্মণবাড়িয়া
+      - ভোলা
+      - মাগুরা
+      - মাদারীপুর
+      - মানিকগঞ্জ
+      - ময়মনসিংহ
+      - মৌলভীবাজার
+      - মেহেরপুর
+      - মুন্সিগঞ্জ
+      - যশোর
+      - জয়পুরহাট
+      - জামালপুর
+      - রাজবাড়ী
+      - রাজশাহী
+      - রাঙামাটি
+      - লালমনিরহাট
+      - লক্ষ্মীপুর
+      - শেরপুর
+      - শরীয়তপুর
+      - সুনামগঞ্জ
+      - সিরাজগঞ্জ
+      - সিলেট
+      - হবিগঞ্জ
+      type: string
+      description: |-
+        * `কক্সবাজার` - কক্সবাজার
+        * `কুড়িগ্রাম` - কুড়িগ্রাম
+        * `কুষ্টিয়া` - কুষ্টিয়া
+        * `কিশোরগঞ্জ` - কিশোরগঞ্জ
+        * `খাগড়াছড়ি` - খাগড়াছড়ি
+        * `খুলনা` - খুলনা
+        * `গাইবান্ধা` - গাইবান্ধা
+        * `গাজীপুর` - গাজীপুর
+        * `গোপালগঞ্জ` - গোপালগঞ্জ
+        * `চট্টগ্রাম` - চট্টগ্রাম
+        * `চাঁদপুর` - চাঁদপুর
+        * `চাঁপাইনবাবগঞ্জ` - চাঁপাইনবাবগঞ্জ
+        * `চুয়াডাঙ্গা` - চুয়াডাঙ্গা
+        * `ঝালকাঠি` - ঝালকাঠি
+        * `ঝিনাইদহ` - ঝিনাইদহ
+        * `টাঙ্গাইল` - টাঙ্গাইল
+        * `ঠাকুরগাঁও` - ঠাকুরগাঁও
+        * `দিনাজপুর` - দিনাজপুর
+        * `ঢাকা` - ঢাকা
+        * `নওগাঁ` - নওগাঁ
+        * `নাটোর` - নাটোর
+        * `নরসিংদী` - নরসিংদী
+        * `নারায়ণগঞ্জ` - নারায়ণগঞ্জ
+        * `নীলফামারী` - নীলফামারী
+        * `নড়াইল` - নড়াইল
+        * `পাবনা` - পাবনা
+        * `পটুয়াখালী` - পটুয়াখালী
+        * `পিরোজপুর` - পিরোজপুর
+        * `পঞ্চগড়` - পঞ্চগড়
+        * `ফেনী` - ফেনী
+        * `ফরিদপুর` - ফরিদপুর
+        * `বাগেরহাট` - বাগেরহাট
+        * `বরগুনা` - বরগুনা
+        * `বরিশাল` - বরিশাল
+        * `বগুড়া` - বগুড়া
+        * `বান্দরবান` - বান্দরবান
+        * `ব্রাহ্মণবাড়িয়া` - ব্রাহ্মণবাড়িয়া
+        * `ভোলা` - ভোলা
+        * `মাগুরা` - মাগুরা
+        * `মাদারীপুর` - মাদারীপুর
+        * `মানিকগঞ্জ` - মানিকগঞ্জ
+        * `ময়মনসিংহ` - ময়মনসিংহ
+        * `মৌলভীবাজার` - মৌলভীবাজার
+        * `মেহেরপুর` - মেহেরপুর
+        * `মুন্সিগঞ্জ` - মুন্সিগঞ্জ
+        * `যশোর` - যশোর
+        * `জয়পুরহাট` - জয়পুরহাট
+        * `জামালপুর` - জামালপুর
+        * `রাজবাড়ী` - রাজবাড়ী
+        * `রাজশাহী` - রাজশাহী
+        * `রাঙামাটি` - রাঙামাটি
+        * `লালমনিরহাট` - লালমনিরহাট
+        * `লক্ষ্মীপুর` - লক্ষ্মীপুর
+        * `শেরপুর` - শেরপুর
+        * `শরীয়তপুর` - শরীয়তপুর
+        * `সুনামগঞ্জ` - সুনামগঞ্জ
+        * `সিরাজগঞ্জ` - সিরাজগঞ্জ
+        * `সিলেট` - সিলেট
+        * `হবিগঞ্জ` - হবিগঞ্জ
+    InterestedPersonEnum:
+      enum:
+      - নিজে আসতে চায়
+      - অন্য কাউকে পাঠাতে চায়
+      type: string
+      description: |-
+        * `নিজে আসতে চায়` - নিজে আসতে চায়
+        * `অন্য কাউকে পাঠাতে চায়` - অন্য কাউকে পাঠাতে চায়
+    KhutbaRegistration:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        mosque_name:
+          type: string
+          maxLength: 255
+        village_locality_street:
+          type: string
+          nullable: true
+          title: Village/Locality/Street Name
+          maxLength: 255
+        post_office:
+          type: string
+          nullable: true
+          maxLength: 255
+        upazila:
+          type: string
+          nullable: true
+          maxLength: 100
+        district:
+          nullable: true
+          oneOf:
+          - $ref: '#/components/schemas/DistrictEnum'
+          - $ref: '#/components/schemas/BlankEnum'
+          - $ref: '#/components/schemas/NullEnum'
+        mosque_responsible_person_name:
+          type: string
+          nullable: true
+          title: Mosque Responsible Person's Name
+          maxLength: 255
+        responsible_person_number:
+          type: string
+          nullable: true
+          title: Responsible Person's Number
+          maxLength: 20
+        whatsapp_number:
+          type: string
+          nullable: true
+          maxLength: 20
+        email:
+          type: string
+          format: email
+          nullable: true
+          maxLength: 254
+        mosque_google_location_url:
+          type: string
+          format: uri
+          nullable: true
+          description: URL of the uploaded Google location file (PDF, PNG, JPEG)
+          maxLength: 500
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - mosque_name
+      - updated_at
+    MosqueCourseRegistration:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        mosque_name:
+          type: string
+          maxLength: 255
+        full_name_bangla:
+          type: string
+          title: Full Name (Bangla)
+          maxLength: 255
+        full_name_english:
+          type: string
+          title: Full Name (English)
+          maxLength: 255
+        email:
+          type: string
+          format: email
+          maxLength: 254
+        mobile_number:
+          type: string
+          maxLength: 20
+        mosque_address:
+          type: string
+          title: Full Mosque Address
+        upazila:
+          type: string
+          maxLength: 100
+        district:
+          type: string
+          maxLength: 100
+        profession:
+          $ref: '#/components/schemas/ProfessionEnum'
+        interested_person:
+          $ref: '#/components/schemas/InterestedPersonEnum'
+        course_source:
+          allOf:
+          - $ref: '#/components/schemas/CourseSourceEnum'
+          title: How did you learn about this course?
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - course_source
+      - created_at
+      - district
+      - email
+      - full_name_bangla
+      - full_name_english
+      - id
+      - interested_person
+      - mobile_number
+      - mosque_address
+      - mosque_name
+      - profession
+      - upazila
+      - updated_at
+    MosqueHasMaktabEnum:
+      enum:
+      - হ্যাঁ
+      - না
+      type: string
+      description: |-
+        * `হ্যাঁ` - হ্যাঁ
+        * `না` - না
+    NullEnum:
+      enum:
+      - null
+    PaginatedAlItisamRegistrationList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/AlItisamRegistration'
+    PaginatedKhutbaRegistrationList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/KhutbaRegistration'
+    PaginatedMosqueCourseRegistrationList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/MosqueCourseRegistration'
+    PaginatedPermissionList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Permission'
+    PaginatedProgramRegistrationList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProgramRegistration'
+    PaginatedQuranAndDeenCourseList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/QuranAndDeenCourse'
+    PaginatedRoleList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Role'
+    PaginatedUserList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/User'
+    Participated3dayMadrasaEnum:
+      enum:
+      - হ্যাঁ
+      - না
+      type: string
+      description: |-
+        * `হ্যাঁ` - হ্যাঁ
+        * `না` - না
+    ParticipatedQuranDeenCourseEnum:
+      enum:
+      - হ্যাঁ
+      - না
+      type: string
+      description: |-
+        * `হ্যাঁ` - হ্যাঁ
+        * `না` - না
+    PatchedAlItisamRegistration:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        your_name:
+          type: string
+          maxLength: 255
+        email:
+          type: string
+          format: email
+          maxLength: 254
+        mobile_number:
+          type: string
+          maxLength: 20
+        village_locality_institution:
+          type: string
+          nullable: true
+          title: Village/Locality/Institution
+          maxLength: 255
+        post:
+          type: string
+          nullable: true
+          maxLength: 255
+        upazila:
+          type: string
+          nullable: true
+          maxLength: 100
+        district:
+          nullable: true
+          oneOf:
+          - $ref: '#/components/schemas/DistrictEnum'
+          - $ref: '#/components/schemas/BlankEnum'
+          - $ref: '#/components/schemas/NullEnum'
+        how_many_copies:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+          title: How many copies will you take?
+          description: Number of copies
+        delivery_medium:
+          allOf:
+          - $ref: '#/components/schemas/DeliveryMediumEnum'
+          title: Through which medium will you take?
+          description: |-
+            Post or Courier
+
+            * `পোস্ট` - পোস্ট
+            * `কুরিয়ার` - কুরিয়ার
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedKhutbaRegistration:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        mosque_name:
+          type: string
+          maxLength: 255
+        village_locality_street:
+          type: string
+          nullable: true
+          title: Village/Locality/Street Name
+          maxLength: 255
+        post_office:
+          type: string
+          nullable: true
+          maxLength: 255
+        upazila:
+          type: string
+          nullable: true
+          maxLength: 100
+        district:
+          nullable: true
+          oneOf:
+          - $ref: '#/components/schemas/DistrictEnum'
+          - $ref: '#/components/schemas/BlankEnum'
+          - $ref: '#/components/schemas/NullEnum'
+        mosque_responsible_person_name:
+          type: string
+          nullable: true
+          title: Mosque Responsible Person's Name
+          maxLength: 255
+        responsible_person_number:
+          type: string
+          nullable: true
+          title: Responsible Person's Number
+          maxLength: 20
+        whatsapp_number:
+          type: string
+          nullable: true
+          maxLength: 20
+        email:
+          type: string
+          format: email
+          nullable: true
+          maxLength: 254
+        mosque_google_location_url:
+          type: string
+          format: uri
+          nullable: true
+          description: URL of the uploaded Google location file (PDF, PNG, JPEG)
+          maxLength: 500
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedMosqueCourseRegistration:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        mosque_name:
+          type: string
+          maxLength: 255
+        full_name_bangla:
+          type: string
+          title: Full Name (Bangla)
+          maxLength: 255
+        full_name_english:
+          type: string
+          title: Full Name (English)
+          maxLength: 255
+        email:
+          type: string
+          format: email
+          maxLength: 254
+        mobile_number:
+          type: string
+          maxLength: 20
+        mosque_address:
+          type: string
+          title: Full Mosque Address
+        upazila:
+          type: string
+          maxLength: 100
+        district:
+          type: string
+          maxLength: 100
+        profession:
+          $ref: '#/components/schemas/ProfessionEnum'
+        interested_person:
+          $ref: '#/components/schemas/InterestedPersonEnum'
+        course_source:
+          allOf:
+          - $ref: '#/components/schemas/CourseSourceEnum'
+          title: How did you learn about this course?
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedProgramRegistration:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        responsible_person_name:
+          type: string
+          title: Responsible Person's Name
+          maxLength: 255
+        field_name:
+          type: string
+          nullable: true
+          title: Field/Ground Name
+          maxLength: 255
+        village:
+          type: string
+          nullable: true
+          maxLength: 255
+        post_office:
+          type: string
+          nullable: true
+          maxLength: 255
+        postal_code:
+          type: string
+          nullable: true
+          maxLength: 20
+        upazila:
+          type: string
+          nullable: true
+          maxLength: 100
+        division:
+          type: string
+          nullable: true
+          maxLength: 100
+        reference_person_name:
+          type: string
+          nullable: true
+          title: Reference Person's Name
+          maxLength: 255
+        responsible_person_number:
+          type: string
+          nullable: true
+          title: Responsible Person's Number
+          maxLength: 20
+        program_type:
+          nullable: true
+          oneOf:
+          - $ref: '#/components/schemas/ProgramTypeEnum'
+          - $ref: '#/components/schemas/BlankEnum'
+          - $ref: '#/components/schemas/NullEnum'
+        district:
+          nullable: true
+          oneOf:
+          - $ref: '#/components/schemas/DistrictEnum'
+          - $ref: '#/components/schemas/BlankEnum'
+          - $ref: '#/components/schemas/NullEnum'
+        program_probable_date:
+          type: string
+          format: date
+          nullable: true
+          title: Program's Probable Date
+        venue_google_location_url:
+          type: string
+          format: uri
+          nullable: true
+          title: Venue's Google Location URL
+          description: URL of the uploaded Google location file (PDF, PNG, JPEG)
+          maxLength: 500
+        program_fund_collection:
+          description: List of selected fund collection sources
+        speakers:
+          description: List of selected speakers (at least one required)
+        program_time:
+          nullable: true
+          oneOf:
+          - $ref: '#/components/schemas/ProgramTimeEnum'
+          - $ref: '#/components/schemas/BlankEnum'
+          - $ref: '#/components/schemas/NullEnum'
+        participated_quran_deen_course:
+          nullable: true
+          title: Have you participated in Quran and Deen education course?
+          oneOf:
+          - $ref: '#/components/schemas/ParticipatedQuranDeenCourseEnum'
+          - $ref: '#/components/schemas/BlankEnum'
+          - $ref: '#/components/schemas/NullEnum'
+        mosque_has_maktab:
+          nullable: true
+          title: Does the mosque have a Maktab?
+          oneOf:
+          - $ref: '#/components/schemas/MosqueHasMaktabEnum'
+          - $ref: '#/components/schemas/BlankEnum'
+          - $ref: '#/components/schemas/NullEnum'
+        attend_salafi_conferences:
+          nullable: true
+          title: Do you attend Salafi conferences?
+          oneOf:
+          - $ref: '#/components/schemas/AttendSalafiConferencesEnum'
+          - $ref: '#/components/schemas/BlankEnum'
+          - $ref: '#/components/schemas/NullEnum'
+        subscriber_al_itisam:
+          nullable: true
+          title: Are you a subscriber of monthly Al Itisam?
+          oneOf:
+          - $ref: '#/components/schemas/SubscriberAlItisamEnum'
+          - $ref: '#/components/schemas/BlankEnum'
+          - $ref: '#/components/schemas/NullEnum'
+        affiliated_jamiah_salafiyyah:
+          nullable: true
+          title: Affiliated with Jami'ah Salafiyyah?
+          oneOf:
+          - $ref: '#/components/schemas/AffiliatedJamiahSalafiyyahEnum'
+          - $ref: '#/components/schemas/BlankEnum'
+          - $ref: '#/components/schemas/NullEnum'
+        participated_3day_madrasa:
+          nullable: true
+          title: Have you participated in 3-day Madrasa?
+          oneOf:
+          - $ref: '#/components/schemas/Participated3dayMadrasaEnum'
+          - $ref: '#/components/schemas/BlankEnum'
+          - $ref: '#/components/schemas/NullEnum'
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedQuranAndDeenCourse:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        full_name_bangla:
+          type: string
+          title: Full Name (Bangla)
+          maxLength: 255
+        full_name_english:
+          type: string
+          title: Full Name (English)
+          maxLength: 255
+        email:
+          type: string
+          format: email
+          maxLength: 254
+        mobile_number:
+          type: string
+          maxLength: 20
+        village_locality:
+          type: string
+          title: Village/Locality
+          maxLength: 255
+        post_office:
+          type: string
+          maxLength: 255
+        upazila:
+          type: string
+          maxLength: 100
+        district:
+          $ref: '#/components/schemas/DistrictEnum'
+        date_of_birth:
+          type: string
+          format: date
+        current_age:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+        course_source:
+          allOf:
+          - $ref: '#/components/schemas/CourseSourceEnum'
+          title: How did you learn about this course?
+        photo_url:
+          type: string
+          format: uri
+          nullable: true
+          description: URL of the uploaded photo
+          maxLength: 500
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedRole:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 50
+        description:
+          type: string
+          nullable: true
+        permissions:
+          type: array
+          items:
+            type: integer
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedUser:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        username:
+          type: string
+          maxLength: 100
+        full_name:
+          type: string
+          maxLength: 150
+        email:
+          type: string
+          format: email
+          nullable: true
+          maxLength: 150
+        phone:
+          type: string
+          nullable: true
+          maxLength: 25
+        gender:
+          type: string
+          nullable: true
+          maxLength: 10
+        date_of_birth:
+          type: string
+          format: date
+          nullable: true
+        address:
+          type: string
+          nullable: true
+        profile_photo:
+          type: string
+          nullable: true
+          maxLength: 255
+        emergency_contact_name:
+          type: string
+          nullable: true
+          maxLength: 150
+        emergency_contact_phone:
+          type: string
+          nullable: true
+          maxLength: 25
+        roles:
+          type: array
+          items:
+            type: integer
+        is_active:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        password:
+          type: string
+          writeOnly: true
+          maxLength: 128
+    Permission:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        code:
+          type: string
+          maxLength: 100
+        module:
+          type: string
+          maxLength: 50
+        description:
+          type: string
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - code
+      - created_at
+      - id
+      - module
+      - updated_at
+    ProfessionEnum:
+      enum:
+      - শিক্ষক
+      - ডাক্তার
+      - ইঞ্জিনিয়ার
+      - আইনজীবী
+      - কৃষক
+      - ব্যবসায়ী
+      - চাকরিজীবী
+      - ফ্রিল্যান্সার
+      - ছাত্র
+      - চিকিৎসক
+      - অন্যান্য
+      type: string
+      description: |-
+        * `শিক্ষক` - শিক্ষক
+        * `ডাক্তার` - ডাক্তার
+        * `ইঞ্জিনিয়ার` - ইঞ্জিনিয়ার
+        * `আইনজীবী` - আইনজীবী
+        * `কৃষক` - কৃষক
+        * `ব্যবসায়ী` - ব্যবসায়ী
+        * `চাকরিজীবী` - চাকরিজীবী
+        * `ফ্রিল্যান্সার` - ফ্রিল্যান্সার
+        * `ছাত্র` - ছাত্র
+        * `চিকিৎসক` - চিকিৎসক
+        * `অন্যান্য` - অন্যান্য
+    ProgramRegistration:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        responsible_person_name:
+          type: string
+          title: Responsible Person's Name
+          maxLength: 255
+        field_name:
+          type: string
+          nullable: true
+          title: Field/Ground Name
+          maxLength: 255
+        village:
+          type: string
+          nullable: true
+          maxLength: 255
+        post_office:
+          type: string
+          nullable: true
+          maxLength: 255
+        postal_code:
+          type: string
+          nullable: true
+          maxLength: 20
+        upazila:
+          type: string
+          nullable: true
+          maxLength: 100
+        division:
+          type: string
+          nullable: true
+          maxLength: 100
+        reference_person_name:
+          type: string
+          nullable: true
+          title: Reference Person's Name
+          maxLength: 255
+        responsible_person_number:
+          type: string
+          nullable: true
+          title: Responsible Person's Number
+          maxLength: 20
+        program_type:
+          nullable: true
+          oneOf:
+          - $ref: '#/components/schemas/ProgramTypeEnum'
+          - $ref: '#/components/schemas/BlankEnum'
+          - $ref: '#/components/schemas/NullEnum'
+        district:
+          nullable: true
+          oneOf:
+          - $ref: '#/components/schemas/DistrictEnum'
+          - $ref: '#/components/schemas/BlankEnum'
+          - $ref: '#/components/schemas/NullEnum'
+        program_probable_date:
+          type: string
+          format: date
+          nullable: true
+          title: Program's Probable Date
+        venue_google_location_url:
+          type: string
+          format: uri
+          nullable: true
+          title: Venue's Google Location URL
+          description: URL of the uploaded Google location file (PDF, PNG, JPEG)
+          maxLength: 500
+        program_fund_collection:
+          description: List of selected fund collection sources
+        speakers:
+          description: List of selected speakers (at least one required)
+        program_time:
+          nullable: true
+          oneOf:
+          - $ref: '#/components/schemas/ProgramTimeEnum'
+          - $ref: '#/components/schemas/BlankEnum'
+          - $ref: '#/components/schemas/NullEnum'
+        participated_quran_deen_course:
+          nullable: true
+          title: Have you participated in Quran and Deen education course?
+          oneOf:
+          - $ref: '#/components/schemas/ParticipatedQuranDeenCourseEnum'
+          - $ref: '#/components/schemas/BlankEnum'
+          - $ref: '#/components/schemas/NullEnum'
+        mosque_has_maktab:
+          nullable: true
+          title: Does the mosque have a Maktab?
+          oneOf:
+          - $ref: '#/components/schemas/MosqueHasMaktabEnum'
+          - $ref: '#/components/schemas/BlankEnum'
+          - $ref: '#/components/schemas/NullEnum'
+        attend_salafi_conferences:
+          nullable: true
+          title: Do you attend Salafi conferences?
+          oneOf:
+          - $ref: '#/components/schemas/AttendSalafiConferencesEnum'
+          - $ref: '#/components/schemas/BlankEnum'
+          - $ref: '#/components/schemas/NullEnum'
+        subscriber_al_itisam:
+          nullable: true
+          title: Are you a subscriber of monthly Al Itisam?
+          oneOf:
+          - $ref: '#/components/schemas/SubscriberAlItisamEnum'
+          - $ref: '#/components/schemas/BlankEnum'
+          - $ref: '#/components/schemas/NullEnum'
+        affiliated_jamiah_salafiyyah:
+          nullable: true
+          title: Affiliated with Jami'ah Salafiyyah?
+          oneOf:
+          - $ref: '#/components/schemas/AffiliatedJamiahSalafiyyahEnum'
+          - $ref: '#/components/schemas/BlankEnum'
+          - $ref: '#/components/schemas/NullEnum'
+        participated_3day_madrasa:
+          nullable: true
+          title: Have you participated in 3-day Madrasa?
+          oneOf:
+          - $ref: '#/components/schemas/Participated3dayMadrasaEnum'
+          - $ref: '#/components/schemas/BlankEnum'
+          - $ref: '#/components/schemas/NullEnum'
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - responsible_person_name
+      - updated_at
+    ProgramTimeEnum:
+      enum:
+      - বাদ যোহর
+      - বাদ আসর
+      - বাদ মাগরিব
+      - বাদ এশা
+      - রাত
+      type: string
+      description: |-
+        * `বাদ যোহর` - বাদ যোহর
+        * `বাদ আসর` - বাদ আসর
+        * `বাদ মাগরিব` - বাদ মাগরিব
+        * `বাদ এশা` - বাদ এশা
+        * `রাত` - রাত
+    ProgramTypeEnum:
+      enum:
+      - মাদ্রাসা উন্নয়ন
+      - মসজিদ উন্নয়ন
+      - গোরস্থান উন্নয়ন
+      - ইদগাহ উন্নয়ন
+      - দাওয়াতি কাজে
+      - মক্তব উন্নয়ন
+      type: string
+      description: |-
+        * `মাদ্রাসা উন্নয়ন` - মাদ্রাসা উন্নয়ন
+        * `মসজিদ উন্নয়ন` - মসজিদ উন্নয়ন
+        * `গোরস্থান উন্নয়ন` - গোরস্থান উন্নয়ন
+        * `ইদগাহ উন্নয়ন` - ইদগাহ উন্নয়ন
+        * `দাওয়াতি কাজে` - দাওয়াতি কাজে
+        * `মক্তব উন্নয়ন` - মক্তব উন্নয়ন
+    QuranAndDeenCourse:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        full_name_bangla:
+          type: string
+          title: Full Name (Bangla)
+          maxLength: 255
+        full_name_english:
+          type: string
+          title: Full Name (English)
+          maxLength: 255
+        email:
+          type: string
+          format: email
+          maxLength: 254
+        mobile_number:
+          type: string
+          maxLength: 20
+        village_locality:
+          type: string
+          title: Village/Locality
+          maxLength: 255
+        post_office:
+          type: string
+          maxLength: 255
+        upazila:
+          type: string
+          maxLength: 100
+        district:
+          $ref: '#/components/schemas/DistrictEnum'
+        date_of_birth:
+          type: string
+          format: date
+        current_age:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+        course_source:
+          allOf:
+          - $ref: '#/components/schemas/CourseSourceEnum'
+          title: How did you learn about this course?
+        photo_url:
+          type: string
+          format: uri
+          nullable: true
+          description: URL of the uploaded photo
+          maxLength: 500
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - course_source
+      - created_at
+      - current_age
+      - date_of_birth
+      - district
+      - email
+      - full_name_bangla
+      - full_name_english
+      - id
+      - mobile_number
+      - post_office
+      - upazila
+      - updated_at
+      - village_locality
+    Role:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 50
+        description:
+          type: string
+          nullable: true
+        permissions:
+          type: array
+          items:
+            type: integer
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - name
+      - updated_at
+    SubscriberAlItisamEnum:
+      enum:
+      - হ্যাঁ
+      - না
+      type: string
+      description: |-
+        * `হ্যাঁ` - হ্যাঁ
+        * `না` - না
+    TokenRefresh:
+      type: object
+      properties:
+        access:
+          type: string
+          readOnly: true
+        refresh:
+          type: string
+          writeOnly: true
+      required:
+      - access
+      - refresh
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        username:
+          type: string
+          maxLength: 100
+        full_name:
+          type: string
+          maxLength: 150
+        email:
+          type: string
+          format: email
+          nullable: true
+          maxLength: 150
+        phone:
+          type: string
+          nullable: true
+          maxLength: 25
+        gender:
+          type: string
+          nullable: true
+          maxLength: 10
+        date_of_birth:
+          type: string
+          format: date
+          nullable: true
+        address:
+          type: string
+          nullable: true
+        profile_photo:
+          type: string
+          nullable: true
+          maxLength: 255
+        emergency_contact_name:
+          type: string
+          nullable: true
+          maxLength: 150
+        emergency_contact_phone:
+          type: string
+          nullable: true
+          maxLength: 25
+        roles:
+          type: array
+          items:
+            type: integer
+        is_active:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        password:
+          type: string
+          writeOnly: true
+          maxLength: 128
+      required:
+      - created_at
+      - full_name
+      - id
+      - password
+      - updated_at
+      - username
+  securitySchemes:
+    jwtAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

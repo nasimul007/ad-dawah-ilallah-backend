@@ -42,6 +42,9 @@ DATABASES = {
         'PASSWORD': config('DB_PASSWORD'),
         'HOST': config('DB_HOST', default='localhost'),
         'PORT': config('DB_PORT', default='5432'),
+         "OPTIONS": {
+            "sslmode": "require",
+        },
     }
 }
 
@@ -59,9 +62,11 @@ INSTALLED_APPS = [
     # Third-party
     'rest_framework',
     'django_filters',
+    'drf_spectacular',
 
     # Project apps
     'accounts',
+    'forms',
 ]
 
 REST_FRAMEWORK = {
@@ -75,6 +80,7 @@ REST_FRAMEWORK = {
     "DEFAULT_FILTER_BACKENDS": [
         "django_filters.rest_framework.DjangoFilterBackend",
     ],
+     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
 
 SIMPLE_JWT = {
