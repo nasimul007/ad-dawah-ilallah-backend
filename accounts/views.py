@@ -2,7 +2,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.filters import OrderingFilter
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 
 from accounts.filters import UserFilter, PermissionFilter, RoleFilter
@@ -20,6 +20,15 @@ class UserViewSet(viewsets.ModelViewSet):
 
     required_permission = "USER_MANAGEMENT"
     permission_classes = [IsAuthenticated, HasPermissionCode]
+
+    def get_permissions(self):
+        """
+        Allow public access (AllowAny) for user creation (POST),
+        but require authentication and permission for other actions.
+        """
+        if self.action == 'create':
+            return [AllowAny()]
+        return super().get_permissions()
 
     # Endpoint to get the current authenticated user
     @action(detail=False, methods=["get"], permission_classes=[IsAuthenticated])
