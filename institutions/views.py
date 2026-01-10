@@ -10,6 +10,10 @@ from .serializers import InstitutionSerializer, DepartmentSerializer
 class InstitutionViewSet(InstitutionScopedQuerySetMixin, ModelViewSet):
     """
     Institution management (global for superuser)
+
+    only superuser or user with "INSTITUTION_MANAGE" permission can CRUD Institution.
+     when a user creates a course, that course will be automatically created under that user's
+     Institution
     """
 
     queryset = Institution.objects.all()
@@ -21,6 +25,10 @@ class InstitutionViewSet(InstitutionScopedQuerySetMixin, ModelViewSet):
 class DepartmentViewSet(InstitutionScopedQuerySetMixin, ModelViewSet):
     """
     Department CRUD under institution
+
+    only superuser or user with "INSTITUTION_MANAGE" permission can CRUD Department.
+     when a user creates a course, that course will be automatically created under that user's
+     Department
     """
 
     queryset = Department.objects.select_related("institution")
