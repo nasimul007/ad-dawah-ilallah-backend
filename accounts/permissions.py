@@ -56,7 +56,7 @@ class HasPermissionCode(BasePermission):
 
         # If no specific permission defined on the view → just authenticated is enough
         if not required_codes:
-            return False
+            return True
 
         # Determine mode: "any" / "all"
         mode = getattr(view, "permission_mode", self.default_permission_mode)
