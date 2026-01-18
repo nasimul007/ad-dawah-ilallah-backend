@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from academics.models import AcademicTerm
+from academics.models import AcademicTerm, Course
 
 
 class AcademicTermSerializer(serializers.ModelSerializer):
@@ -27,3 +27,26 @@ class AcademicTermSerializer(serializers.ModelSerializer):
             )
 
         return attrs
+
+
+class CourseSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Course
+        fields = [
+            "id",
+            "institution",
+            "code",
+            "title",
+            "description",
+            "level",
+            "category",
+            "credit_hours",
+            "default_duration_weeks",
+            "is_active",
+            "created_at",
+            "updated_at",
+        ]
+        read_only_fields = ("created_at", "updated_at")
+
+    def validate_code(self, value):
+        return value.upper()

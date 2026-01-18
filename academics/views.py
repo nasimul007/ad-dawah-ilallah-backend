@@ -2,9 +2,9 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.filters import SearchFilter, OrderingFilter
 
-from academics.models import AcademicTerm
+from academics.models import AcademicTerm, Course
 from accounts.permissions import HasPermissionCode
-from .serializers import AcademicTermSerializer
+from .serializers import AcademicTermSerializer, CourseSerializer
 from .services import AcademicTermService
 
 
@@ -51,3 +51,39 @@ class AcademicTermViewSet(ModelViewSet):
 
         if term.is_current:
             AcademicTermService.set_current_term(term)
+
+
+class CourseViewSet(ModelViewSet):
+    serializer_class = CourseSerializer
+    filter_backends = [SearchFilter, OrderingFilter]
+
+    search_fields = ["code", "title"]
+    ordering_fields = ["title", "created_at"]
+    ordering = ["title"]
+
+    required_permissions = {
+        "GET": "COURSES_VIEW",
+        "POST": "COURSES_MANAGE",
+        "PUT": "COURSES_MANAGE",
+        "PATCH": "COURSES_MANAGE",
+        "DELETE": "COURSES_MANAGE",
+    }
+    permission_classes = [IsAuthenticated, HasPermissionCode]
+
+    def get_queryset(self):
+        user = self.request.user
+        if user.is_superuser:
+            return Course.objects.all()
+
+        return Course.objects.filter(
+            institution=user.institution
+        )
+
+    def perform_create(self, serializer):
+        serializer.save(
+            created_by=self.request.user,
+            updated_by=self.request.user
+        )
+
+    def perform_update(self, serializer):
+        serializer.save(updated_by=self.request.user)
