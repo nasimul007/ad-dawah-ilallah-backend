@@ -87,8 +87,131 @@ class Course(models.Model):
         return f"{self.code} - {self.title}"
 
 
+class CourseOffering(models.Model):
+    MODE_CHOICES = (
+        ("online", "Online"),
+        ("offline", "Offline"),
+        ("hybrid", "Hybrid"),
+    )
+
+    STATUS_CHOICES = (
+        ("draft", "Draft"),
+        ("running", "Running"),
+        ("completed", "Completed"),
+        ("cancelled", "Cancelled"),
+    )
+
+    institution = models.ForeignKey(
+        Institution,
+        on_delete=models.CASCADE,
+        related_name="course_offerings"
+    )
+
+    course = models.ForeignKey(
+        Course,
+        on_delete=models.CASCADE,
+        related_name="offerings"
+    )
+
+    academic_term = models.ForeignKey(
+        AcademicTerm,
+        on_delete=models.PROTECT,
+        related_name="course_offerings"
+    )
+
+    section_code = models.CharField(max_length=50, blank=True, null=True)
+
+    mode = models.CharField(
+        max_length=20,
+        choices=MODE_CHOICES
+    )
+
+    max_students = models.PositiveIntegerField(blank=True, null=True)
+
+    start_date = models.DateField(blank=True, null=True)
+    end_date = models.DateField(blank=True, null=True)
+
+    coordinator = models.ForeignKey(
+        User,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="coordinated_offerings"
+    )
+
+    primary_educator = models.ForeignKey(
+        User,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="primary_teaching_offerings"
+    )
+
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default="draft"
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    created_by = models.ForeignKey(
+        User,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="+"
+    )
+
+    updated_by = models.ForeignKey(
+        User,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="+"
+    )
+
+    class Meta:
+        db_table = "course_offerings"
+        ordering = ["-created_at"]
+        unique_together = (
+            "institution",
+            "course",
+            "academic_term",
+            "section_code",
+        )
+
+    def __str__(self):
+        return f"{self.course.code} ({self.academic_term.name})"
 
 
+class CourseInstructor(models.Model):
+    ROLE_CHOICES = (
+        ("primary", "Primary"),
+        ("assistant", "Assistant"),
+        ("guest", "Guest"),
+    )
 
+    course_offering = models.ForeignKey(
+        CourseOffering,
+        on_delete=models.CASCADE,
+        related_name="instructors"
+    )
 
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="teaching_assignments"
+    )
+
+    role = models.CharField(
+        max_length=50,
+        choices=ROLE_CHOICES,
+        default="assistant"
+    )
+
+    class Meta:
+        db_table = "course_instructors"
+        unique_together = ("course_offering", "user")
 
