@@ -2,9 +2,9 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.filters import SearchFilter, OrderingFilter
 
-from academics.models import AcademicTerm, Course, CourseOffering
+from academics.models import AcademicTerm, Course, CourseOffering, CourseEnrollment
 from accounts.permissions import HasPermissionCode
-from .serializers import AcademicTermSerializer, CourseSerializer, CourseOfferingSerializer
+from .serializers import AcademicTermSerializer, CourseSerializer, CourseOfferingSerializer, CourseEnrollmentSerializer
 from .services import AcademicTermService
 
 
@@ -117,6 +117,71 @@ class CourseOfferingViewSet(ModelViewSet):
             institution=self.request.user.institution,
             created_by=self.request.user,
             updated_by=self.request.user
+        )
+
+    def perform_update(self, serializer):
+        serializer.save(updated_by=self.request.user)
+
+
+class CourseEnrollmentViewSet(ModelViewSet):
+    serializer_class = CourseEnrollmentSerializer
+    permission_classes = [IsAuthenticated, HasPermissionCode]
+
+    required_permissions = {
+        "GET": "COURSES_VIEW",
+        "POST": "COURSES_MANAGE",
+        "PUT": "COURSES_MANAGE",
+        "PATCH": "COURSES_MANAGE",
+        "DELETE": "COURSES_MANAGE",
+    }
+
+    filter_backends = [SearchFilter, OrderingFilter]
+    search_fields = [
+        "student__full_name",
+        "student__username",
+        "course_offering__course__title",
+        "course_offering__course__code",
+    ]
+    ordering_fields = ["created_at", "enrollment_date"]
+    ordering = ["-created_at"]
+
+    def get_queryset(self):
+        user = self.request.user
+
+         # Superuser → everything
+        if user.is_superuser:
+            return CourseEnrollment.objects.select_related(
+                "student",
+                "course_offering",
+                "course_offering__course",
+                "course_offering__academic_term",
+            )
+
+        # student (role_id = 2) → only own enrollments
+        if user.has_role_code("student"):
+            return CourseEnrollment.objects.filter(
+                student=user
+            ).select_related(
+                "course_offering",
+                "course_offering__course",
+                "course_offering__academic_term",
+            )
+
+        # Admin / coordinator / others → institution scope
+        return CourseEnrollment.objects.filter(
+            course_offering__institution=user.institution
+        ).select_related(
+            "student",
+            "course_offering",
+            "course_offering__course",
+            "course_offering__academic_term",
+        )
+
+    def perform_create(self, serializer):
+        serializer.save(
+            created_by=self.request.user,
+            updated_by=self.request.user,
+            enrollment_source="admin"
         )
 
     def perform_update(self, serializer):

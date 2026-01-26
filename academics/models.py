@@ -215,3 +215,72 @@ class CourseInstructor(models.Model):
         db_table = "course_instructors"
         unique_together = ("course_offering", "user")
 
+
+class CourseEnrollment(models.Model):
+    STATUS_CHOICES = (
+        ("pending", "Pending"),
+        ("active", "Active"),
+        ("completed", "Completed"),
+        ("dropped", "Dropped"),
+        ("failed", "Failed"),
+    )
+
+    ENROLLMENT_SOURCE_CHOICES = (
+        ("self", "Self"),
+        ("admin", "Admin"),
+        ("coordinator", "Coordinator"),
+    )
+
+    course_offering = models.ForeignKey(
+        CourseOffering,
+        on_delete=models.CASCADE,
+        related_name="enrollments"
+    )
+
+    student = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="course_enrollments"
+    )
+
+    enrollment_date = models.DateField(auto_now_add=True)
+
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default="pending"
+    )
+
+    enrollment_source = models.CharField(
+        max_length=50,
+        choices=ENROLLMENT_SOURCE_CHOICES,
+        default="admin"
+    )
+
+    remarks = models.TextField(blank=True, null=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    created_by = models.ForeignKey(
+        User,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="+"
+    )
+    updated_by = models.ForeignKey(
+        User,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="+"
+    )
+
+    class Meta:
+        db_table = "course_enrollments"
+        unique_together = ("course_offering", "student")
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.student.full_name} → {self.course_offering}"

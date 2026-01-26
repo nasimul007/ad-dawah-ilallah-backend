@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from academics.models import AcademicTerm, Course, CourseInstructor, CourseOffering
+from academics.models import AcademicTerm, Course, CourseInstructor, CourseOffering, CourseEnrollment
 
 
 class AcademicTermSerializer(serializers.ModelSerializer):
@@ -121,3 +121,44 @@ class CourseOfferingSerializer(serializers.ModelSerializer):
                 )
 
         return instance
+
+
+class CourseEnrollmentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CourseEnrollment
+        fields = [
+            "id",
+            "course_offering",
+            "student",
+            "enrollment_date",
+            "status",
+            "enrollment_source",
+            "remarks",
+            "created_at",
+            "updated_at",
+        ]
+        read_only_fields = (
+            "enrollment_date",
+            "created_at",
+            "updated_at",
+        )
+
+    def validate(self, attrs):
+        course_offering = attrs.get("course_offering")
+        student = attrs.get("student")
+
+        if not course_offering:
+            return attrs
+
+        # Capacity check
+        if course_offering.max_students:
+            active_count = course_offering.enrollments.filter(
+                status__in=["pending", "active"]
+            ).count()
+
+            if active_count >= course_offering.max_students:
+                raise serializers.ValidationError(
+                    "This course offering has reached maximum capacity."
+                )
+
+        return attrs
