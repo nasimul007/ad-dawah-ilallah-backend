@@ -2,9 +2,10 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.filters import SearchFilter, OrderingFilter
 
-from academics.models import AcademicTerm, Course, CourseOffering, CourseEnrollment
+from academics.models import AcademicTerm, Course, CourseOffering, CourseEnrollment, ClassRoutine, ClassSession
 from accounts.permissions import HasPermissionCode
-from .serializers import AcademicTermSerializer, CourseSerializer, CourseOfferingSerializer, CourseEnrollmentSerializer
+from .serializers import AcademicTermSerializer, CourseSerializer, CourseOfferingSerializer, CourseEnrollmentSerializer, \
+    ClassRoutineSerializer, ClassSessionSerializer
 from .services import AcademicTermService
 
 
@@ -157,7 +158,7 @@ class CourseEnrollmentViewSet(ModelViewSet):
                 "course_offering__academic_term",
             )
 
-        # student (role_id = 2) → only own enrollments
+        # student → only own enrollments
         if user.has_role_code("student"):
             return CourseEnrollment.objects.filter(
                 student=user
@@ -186,3 +187,71 @@ class CourseEnrollmentViewSet(ModelViewSet):
 
     def perform_update(self, serializer):
         serializer.save(updated_by=self.request.user)
+
+class ClassRoutineViewSet(ModelViewSet):
+    serializer_class = ClassRoutineSerializer
+    permission_classes = [IsAuthenticated, HasPermissionCode]
+
+    required_permissions = {
+        "GET": "COURSES_VIEW",
+        "POST": "COURSES_MANAGE",
+        "PUT": "COURSES_MANAGE",
+        "PATCH": "COURSES_MANAGE",
+        "DELETE": "COURSES_MANAGE",
+    }
+
+    filter_backends = [OrderingFilter]
+    ordering_fields = ["weekday", "start_time"]
+    ordering = ["weekday", "start_time"]
+
+    def get_queryset(self):
+        user = self.request.user
+
+        if user.is_superuser:
+            return ClassRoutine.objects.select_related(
+                "course_offering"
+            )
+
+        if user.has_role_code("student"):
+            return ClassRoutine.objects.filter(
+                course_offering__enrollments__student=user
+            ).distinct()
+
+        return ClassRoutine.objects.filter(
+            course_offering__institution=user.institution
+        ).select_related("course_offering")
+
+
+class ClassSessionViewSet(ModelViewSet):
+    serializer_class = ClassSessionSerializer
+    permission_classes = [IsAuthenticated, HasPermissionCode]
+
+    required_permissions = {
+        "GET": "COURSES_VIEW",
+        "POST": "COURSES_MANAGE",
+        "PUT": "COURSES_MANAGE",
+        "PATCH": "COURSES_MANAGE",
+        "DELETE": "COURSES_MANAGE",
+    }
+
+    filter_backends = [OrderingFilter]
+    ordering_fields = ["session_date"]
+    ordering = ["-session_date"]
+
+    def get_queryset(self):
+        user = self.request.user
+
+        if user.is_superuser:
+            return ClassSession.objects.select_related(
+                "course_offering"
+            )
+
+        # Students → only their sessions
+        if user.has_role_code("student"):
+            return ClassSession.objects.filter(
+                course_offering__enrollments__student=user
+            ).distinct()
+
+        return ClassSession.objects.filter(
+            course_offering__institution=user.institution
+        ).select_related("course_offering")

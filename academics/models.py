@@ -284,3 +284,106 @@ class CourseEnrollment(models.Model):
 
     def __str__(self):
         return f"{self.student.full_name} → {self.course_offering}"
+
+
+class ClassRoutine(models.Model):
+    WEEKDAY_CHOICES = (
+        (0, "Sunday"),
+        (1, "Monday"),
+        (2, "Tuesday"),
+        (3, "Wednesday"),
+        (4, "Thursday"),
+        (5, "Friday"),
+        (6, "Saturday"),
+    )
+
+    CLASS_TYPE_CHOICES = (
+        ("lecture", "Lecture"),
+        ("tutorial", "Tutorial"),
+        ("qa", "Q&A"),
+    )
+
+    course_offering = models.ForeignKey(
+        CourseOffering,
+        on_delete=models.CASCADE,
+        related_name="class_routines"
+    )
+
+    weekday = models.PositiveSmallIntegerField(
+        choices=WEEKDAY_CHOICES
+    )
+
+    start_time = models.TimeField()
+    end_time = models.TimeField()
+
+    class_type = models.CharField(
+        max_length=50,
+        choices=CLASS_TYPE_CHOICES,
+        default="lecture"
+    )
+
+    location = models.CharField(
+        max_length=150,
+        blank=True,
+        null=True
+    )
+
+    zoom_link = models.URLField(blank=True, null=True)
+    youtube_link = models.URLField(blank=True, null=True)
+
+    class Meta:
+        db_table = "class_routines"
+        unique_together = (
+            "course_offering",
+            "weekday",
+            "start_time",
+        )
+        ordering = ["weekday", "start_time"]
+
+    def __str__(self):
+        return f"{self.course_offering} | {self.get_weekday_display()}"
+
+
+class ClassSession(models.Model):
+    CLASS_TYPE_CHOICES = (
+        ("lecture", "Lecture"),
+        ("tutorial", "Tutorial"),
+        ("qa", "Q&A"),
+    )
+
+    course_offering = models.ForeignKey(
+        CourseOffering,
+        on_delete=models.CASCADE,
+        related_name="class_sessions"
+    )
+
+    session_date = models.DateField()
+
+    start_time = models.TimeField(blank=True, null=True)
+    end_time = models.TimeField(blank=True, null=True)
+
+    topic = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True
+    )
+
+    class_type = models.CharField(
+        max_length=50,
+        choices=CLASS_TYPE_CHOICES,
+        default="lecture"
+    )
+
+    recording_url = models.URLField(blank=True, null=True)
+    notes = models.TextField(blank=True, null=True)
+
+    class Meta:
+        db_table = "class_sessions"
+        unique_together = (
+            "course_offering",
+            "session_date",
+        )
+        ordering = ["-session_date"]
+
+    def __str__(self):
+        return f"{self.course_offering} | {self.session_date}"

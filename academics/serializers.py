@@ -1,5 +1,6 @@
 from rest_framework import serializers
-from academics.models import AcademicTerm, Course, CourseInstructor, CourseOffering, CourseEnrollment
+from academics.models import AcademicTerm, Course, CourseInstructor, CourseOffering, CourseEnrollment, ClassRoutine, \
+    ClassSession
 
 
 class AcademicTermSerializer(serializers.ModelSerializer):
@@ -161,4 +162,53 @@ class CourseEnrollmentSerializer(serializers.ModelSerializer):
                     "This course offering has reached maximum capacity."
                 )
 
+        return attrs
+
+
+class ClassRoutineSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ClassRoutine
+        fields = [
+            "id",
+            "course_offering",
+            "weekday",
+            "start_time",
+            "end_time",
+            "class_type",
+            "location",
+            "zoom_link",
+            "youtube_link",
+        ]
+
+    def validate(self, attrs):
+        if attrs["start_time"] >= attrs["end_time"]:
+            raise serializers.ValidationError(
+                "End time must be after start time."
+            )
+        return attrs
+
+
+class ClassSessionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ClassSession
+        fields = [
+            "id",
+            "course_offering",
+            "session_date",
+            "start_time",
+            "end_time",
+            "topic",
+            "class_type",
+            "recording_url",
+            "notes",
+        ]
+
+    def validate(self, attrs):
+        start = attrs.get("start_time")
+        end = attrs.get("end_time")
+
+        if start and end and start >= end:
+            raise serializers.ValidationError(
+                "End time must be after start time."
+            )
         return attrs
