@@ -69,6 +69,7 @@ INSTALLED_APPS = [
     'academics',
     'institutions',
     'forms',
+    'files'
 ]
 
 REST_FRAMEWORK = {

@@ -1,13 +1,14 @@
+from django.utils.timezone import now
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.filters import SearchFilter, OrderingFilter
 
 from academics.models import AcademicTerm, Course, CourseOffering, CourseEnrollment, ClassRoutine, ClassSession, \
-    Attendance
+    Attendance, Assignment, AssignmentSubmission
 from accounts.permissions import HasPermissionCode
 from .serializers import AcademicTermSerializer, CourseSerializer, CourseOfferingSerializer, \
     CourseEnrollmentSerializer, ClassRoutineSerializer, ClassSessionSerializer, \
-    AttendanceSerializer
+    AttendanceSerializer, AssignmentSerializer, AssignmentSubmissionSerializer
 from .services import AcademicTermService
 
 
@@ -313,4 +314,90 @@ class AttendanceViewSet(ModelViewSet):
     def perform_update(self, serializer):
         serializer.save(
             marked_by=self.request.user
+        )
+
+
+class AssignmentViewSet(ModelViewSet):
+    serializer_class = AssignmentSerializer
+    permission_classes = [IsAuthenticated, HasPermissionCode]
+
+    required_permissions = {
+        "GET": "COURSES_VIEW",
+        "POST": "COURSES_MANAGE",
+        "PUT": "COURSES_MANAGE",
+        "PATCH": "COURSES_MANAGE",
+        "DELETE": "COURSES_MANAGE",
+    }
+
+    filter_backends = [SearchFilter, OrderingFilter]
+    search_fields = ["title"]
+    ordering_fields = ["due_at", "created_at"]
+    ordering = ["-due_at"]
+
+    def get_queryset(self):
+        user = self.request.user
+
+        if user.is_superuser:
+            return Assignment.objects.select_related("course_offering")
+
+        if user.has_role_code("student"):
+            return Assignment.objects.filter(
+                course_offering__enrollments__student=user
+            ).distinct()
+
+        return Assignment.objects.filter(
+            course_offering__institution=user.institution
+        )
+
+    def perform_create(self, serializer):
+        serializer.save(
+            created_by=self.request.user,
+            updated_by=self.request.user
+        )
+
+    def perform_update(self, serializer):
+        serializer.save(updated_by=self.request.user)
+
+
+class AssignmentSubmissionViewSet(ModelViewSet):
+    serializer_class = AssignmentSubmissionSerializer
+    permission_classes = [IsAuthenticated, HasPermissionCode]
+
+    required_permissions = {
+        "GET": "COURSES_VIEW",
+        "POST": "COURSES_VIEW",     # students submit
+        "PUT": "COURSES_MANAGE",    # grading
+        "PATCH": "COURSES_MANAGE",
+        "DELETE": "COURSES_MANAGE",
+    }
+
+    filter_backends = [SearchFilter, OrderingFilter]
+    search_fields = ["student__full_name"]
+    ordering_fields = ["submitted_at"]
+    ordering = ["-submitted_at"]
+
+    def get_queryset(self):
+        user = self.request.user
+
+        if user.is_superuser:
+            return AssignmentSubmission.objects.select_related(
+                "student", "assignment"
+            )
+
+        if user.has_role_code("student"):
+            return AssignmentSubmission.objects.filter(
+                student=user
+            ).select_related("assignment")
+
+        return AssignmentSubmission.objects.filter(
+            assignment__course_offering__institution=user.institution
+        )
+
+    def perform_create(self, serializer):
+        serializer.save(student=self.request.user)
+
+    def perform_update(self, serializer):
+        serializer.save(
+            graded_by=self.request.user,
+            graded_at=now()
         )

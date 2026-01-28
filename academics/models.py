@@ -1,6 +1,7 @@
 from django.db import models
 from institutions.models import Institution
 from accounts.models import User
+from files.models import FileUpload
 
 
 class AcademicTerm(models.Model):
@@ -435,3 +436,128 @@ class Attendance(models.Model):
 
     def __str__(self):
         return f"{self.student.full_name} | {self.class_session}"
+
+
+class Assignment(models.Model):
+    TYPE_CHOICES = (
+        ("homework", "Homework"),
+        ("ct", "Class Test"),
+        ("quiz", "Quiz"),
+        ("project", "Project"),
+    )
+
+    course_offering = models.ForeignKey(
+        CourseOffering,
+        on_delete=models.CASCADE,
+        related_name="assignments"
+    )
+
+    title = models.CharField(max_length=200)
+    description = models.TextField(blank=True, null=True)
+
+    type = models.CharField(
+        max_length=50,
+        choices=TYPE_CHOICES
+    )
+
+    max_marks = models.DecimalField(
+        max_digits=5,
+        decimal_places=2
+    )
+
+    due_at = models.DateTimeField()
+
+    allow_late_submission = models.BooleanField(default=False)
+    late_penalty_percent = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        blank=True,
+        null=True
+    )
+
+    instruction_file = models.ForeignKey(
+        FileUpload,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="+"
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    created_by = models.ForeignKey(
+        User,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="+"
+    )
+
+    updated_by = models.ForeignKey(
+        User,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="+"
+    )
+
+    class Meta:
+        db_table = "assignments"
+        ordering = ["-due_at"]
+
+    def __str__(self):
+        return f"{self.title} | {self.course_offering}"
+
+
+class AssignmentSubmission(models.Model):
+    assignment = models.ForeignKey(
+        Assignment,
+        on_delete=models.CASCADE,
+        related_name="submissions"
+    )
+
+    student = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="assignment_submissions"
+    )
+
+    submitted_at = models.DateTimeField(auto_now_add=True)
+
+    text_answer = models.TextField(blank=True, null=True)
+
+    attachment = models.ForeignKey(
+        FileUpload,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="+"
+    )
+
+    marks_obtained = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        blank=True,
+        null=True
+    )
+
+    feedback = models.TextField(blank=True, null=True)
+
+    graded_by = models.ForeignKey(
+        User,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="+"
+    )
+
+    graded_at = models.DateTimeField(blank=True, null=True)
+
+    class Meta:
+        db_table = "assignment_submissions"
+        unique_together = ("assignment", "student")
+        ordering = ["-submitted_at"]
+
+    def __str__(self):
+        return f"{self.student.full_name} → {self.assignment.title}"

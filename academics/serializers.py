@@ -1,6 +1,7 @@
+from django.utils.timezone import now
 from rest_framework import serializers
 from academics.models import AcademicTerm, Course, CourseInstructor, CourseOffering, CourseEnrollment, ClassRoutine, \
-    ClassSession, Attendance
+    ClassSession, Attendance, Assignment, AssignmentSubmission
 
 
 class AcademicTermSerializer(serializers.ModelSerializer):
@@ -246,6 +247,84 @@ class AttendanceSerializer(serializers.ModelSerializer):
         if not is_enrolled:
             raise serializers.ValidationError(
                 "Student is not enrolled in this course offering."
+            )
+
+        return attrs
+
+
+class AssignmentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Assignment
+        fields = [
+            "id",
+            "course_offering",
+            "title",
+            "description",
+            "type",
+            "max_marks",
+            "due_at",
+            "allow_late_submission",
+            "late_penalty_percent",
+            "instruction_file",
+            "created_at",
+            "updated_at",
+        ]
+        read_only_fields = ("created_at", "updated_at")
+
+    def validate(self, attrs):
+        if (
+            attrs.get("allow_late_submission") is False
+            and attrs.get("late_penalty_percent")
+        ):
+            raise serializers.ValidationError(
+                "Late penalty is not applicable if late submission is disabled."
+            )
+        return attrs
+
+
+class AssignmentSubmissionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AssignmentSubmission
+        fields = [
+            "id",
+            "assignment",
+            "student",
+            "submitted_at",
+            "text_answer",
+            "attachment",
+            "marks_obtained",
+            "feedback",
+            "graded_by",
+            "graded_at",
+        ]
+        read_only_fields = (
+            "submitted_at",
+            "marks_obtained",
+            "feedback",
+            "graded_by",
+            "graded_at",
+        )
+
+    def validate(self, attrs):
+        assignment = attrs.get("assignment")
+        student = attrs.get("student")
+
+        # Ensure student is enrolled
+        is_enrolled = CourseEnrollment.objects.filter(
+            course_offering=assignment.course_offering,
+            student=student,
+            status__in=["pending", "active", "completed"],
+        ).exists()
+
+        if not is_enrolled:
+            raise serializers.ValidationError(
+                "Student is not enrolled in this course offering."
+            )
+
+        # Due date check
+        if assignment.due_at < now() and not assignment.allow_late_submission:
+            raise serializers.ValidationError(
+                "Assignment submission deadline has passed."
             )
 
         return attrs
