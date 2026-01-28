@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from academics.models import AcademicTerm, Course, CourseInstructor, CourseOffering, CourseEnrollment, ClassRoutine, \
-    ClassSession
+    ClassSession, Attendance
 
 
 class AcademicTermSerializer(serializers.ModelSerializer):
@@ -211,4 +211,41 @@ class ClassSessionSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 "End time must be after start time."
             )
+        return attrs
+
+
+class AttendanceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Attendance
+        fields = [
+            "id",
+            "class_session",
+            "student",
+            "status",
+            "check_in_time",
+            "remarks",
+            "created_at",
+            "updated_at",
+        ]
+        read_only_fields = ("created_at", "updated_at")
+
+    def validate(self, attrs):
+        class_session = attrs.get("class_session")
+        student = attrs.get("student")
+
+        if not class_session or not student:
+            return attrs
+
+        # Ensure student is enrolled in this course offering
+        is_enrolled = CourseEnrollment.objects.filter(
+            course_offering=class_session.course_offering,
+            student=student,
+            status__in=["pending", "active", "completed"]
+        ).exists()
+
+        if not is_enrolled:
+            raise serializers.ValidationError(
+                "Student is not enrolled in this course offering."
+            )
+
         return attrs

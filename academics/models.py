@@ -387,3 +387,51 @@ class ClassSession(models.Model):
 
     def __str__(self):
         return f"{self.course_offering} | {self.session_date}"
+
+
+class Attendance(models.Model):
+    STATUS_CHOICES = (
+        ("present", "Present"),
+        ("absent", "Absent"),
+        ("late", "Late"),
+        ("excused", "Excused"),
+    )
+
+    class_session = models.ForeignKey(
+        ClassSession,
+        on_delete=models.CASCADE,
+        related_name="attendances"
+    )
+
+    student = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="attendances"
+    )
+
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES
+    )
+
+    check_in_time = models.DateTimeField(blank=True, null=True)
+    remarks = models.TextField(blank=True, null=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    marked_by = models.ForeignKey(
+        User,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="+"
+    )
+
+    class Meta:
+        db_table = "attendance"
+        unique_together = ("class_session", "student")
+        ordering = ["student__full_name"]
+
+    def __str__(self):
+        return f"{self.student.full_name} | {self.class_session}"

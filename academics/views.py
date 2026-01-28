@@ -2,10 +2,12 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.filters import SearchFilter, OrderingFilter
 
-from academics.models import AcademicTerm, Course, CourseOffering, CourseEnrollment, ClassRoutine, ClassSession
+from academics.models import AcademicTerm, Course, CourseOffering, CourseEnrollment, ClassRoutine, ClassSession, \
+    Attendance
 from accounts.permissions import HasPermissionCode
-from .serializers import AcademicTermSerializer, CourseSerializer, CourseOfferingSerializer, CourseEnrollmentSerializer, \
-    ClassRoutineSerializer, ClassSessionSerializer
+from .serializers import AcademicTermSerializer, CourseSerializer, CourseOfferingSerializer, \
+    CourseEnrollmentSerializer, ClassRoutineSerializer, ClassSessionSerializer, \
+    AttendanceSerializer
 from .services import AcademicTermService
 
 
@@ -255,3 +257,60 @@ class ClassSessionViewSet(ModelViewSet):
         return ClassSession.objects.filter(
             course_offering__institution=user.institution
         ).select_related("course_offering")
+
+
+class AttendanceViewSet(ModelViewSet):
+    serializer_class = AttendanceSerializer
+    permission_classes = [IsAuthenticated, HasPermissionCode]
+
+    required_permissions = {
+        "GET": "COURSES_VIEW",
+        "POST": "COURSES_MANAGE",
+        "PUT": "COURSES_MANAGE",
+        "PATCH": "COURSES_MANAGE",
+        "DELETE": "COURSES_MANAGE",
+    }
+
+    filter_backends = [SearchFilter, OrderingFilter]
+    search_fields = ["student__full_name", "student__username"]
+    ordering_fields = ["created_at"]
+    ordering = ["student__full_name"]
+
+    def get_queryset(self):
+        user = self.request.user
+
+        # Superuser → everything
+        if user.is_superuser:
+            return Attendance.objects.select_related(
+                "student",
+                "class_session",
+                "class_session__course_offering",
+            )
+
+        # Student → only own attendance
+        if user.has_role_code("student"):
+            return Attendance.objects.filter(
+                student=user
+            ).select_related(
+                "class_session",
+                "class_session__course_offering",
+            )
+
+        # Admin / teacher → institution scope
+        return Attendance.objects.filter(
+            class_session__course_offering__institution=user.institution
+        ).select_related(
+            "student",
+            "class_session",
+            "class_session__course_offering",
+        )
+
+    def perform_create(self, serializer):
+        serializer.save(
+            marked_by=self.request.user
+        )
+
+    def perform_update(self, serializer):
+        serializer.save(
+            marked_by=self.request.user
+        )
