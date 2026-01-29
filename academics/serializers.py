@@ -1,7 +1,7 @@
 from django.utils.timezone import now
 from rest_framework import serializers
 from academics.models import AcademicTerm, Course, CourseInstructor, CourseOffering, CourseEnrollment, ClassRoutine, \
-    ClassSession, Attendance, Assignment, AssignmentSubmission
+    ClassSession, Attendance, Assignment, AssignmentSubmission, Assessment, AssessmentResult, CourseResult
 
 
 class AcademicTermSerializer(serializers.ModelSerializer):
@@ -328,3 +328,23 @@ class AssignmentSubmissionSerializer(serializers.ModelSerializer):
             )
 
         return attrs
+
+
+class AssessmentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Assessment
+        fields = "__all__"
+        read_only_fields = ("created_at", "updated_at")
+
+
+class AssessmentResultSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AssessmentResult
+        fields = "__all__"
+        read_only_fields = ("created_at",)
+
+
+class CourseResultSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CourseResult
+        fields = "__all__"

@@ -1,6 +1,7 @@
 from rest_framework.routers import DefaultRouter
 from academics.views import AcademicTermViewSet, CourseViewSet, CourseOfferingViewSet, ClassRoutineViewSet, \
-    ClassSessionViewSet, CourseEnrollmentViewSet, AttendanceViewSet, AssignmentSubmissionViewSet, AssignmentViewSet
+    ClassSessionViewSet, CourseEnrollmentViewSet, AttendanceViewSet, AssignmentSubmissionViewSet, AssignmentViewSet, \
+    AssessmentViewSet, AssessmentResultViewSet, CourseResultViewSet
 
 router = DefaultRouter()
 router.register("academic-terms", AcademicTermViewSet, basename="academic-term")
@@ -17,6 +18,9 @@ router.register("attendance", AttendanceViewSet, basename="attendance")
 router.register("assignments", AssignmentViewSet, basename="assignment")
 router.register("assignment-submissions", AssignmentSubmissionViewSet, basename="assignment-submission")
 
+router.register("assessments", AssessmentViewSet, basename="assessment")
+router.register("assessment-results", AssessmentResultViewSet, basename="assessment-result")
+router.register("course-results", CourseResultViewSet, basename="course-result")
 
 
 urlpatterns = router.urls

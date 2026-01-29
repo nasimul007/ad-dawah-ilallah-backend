@@ -4,11 +4,12 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework.filters import SearchFilter, OrderingFilter
 
 from academics.models import AcademicTerm, Course, CourseOffering, CourseEnrollment, ClassRoutine, ClassSession, \
-    Attendance, Assignment, AssignmentSubmission
+    Attendance, Assignment, AssignmentSubmission, Assessment, AssessmentResult, CourseResult
 from accounts.permissions import HasPermissionCode
 from .serializers import AcademicTermSerializer, CourseSerializer, CourseOfferingSerializer, \
     CourseEnrollmentSerializer, ClassRoutineSerializer, ClassSessionSerializer, \
-    AttendanceSerializer, AssignmentSerializer, AssignmentSubmissionSerializer
+    AttendanceSerializer, AssignmentSerializer, AssignmentSubmissionSerializer, AssessmentSerializer, \
+    AssessmentResultSerializer, CourseResultSerializer
 from .services import AcademicTermService
 
 
@@ -400,4 +401,90 @@ class AssignmentSubmissionViewSet(ModelViewSet):
         serializer.save(
             graded_by=self.request.user,
             graded_at=now()
+        )
+
+
+class AssessmentViewSet(ModelViewSet):
+    serializer_class = AssessmentSerializer
+    permission_classes = [IsAuthenticated, HasPermissionCode]
+
+    required_permissions = {
+        "GET": "COURSES_VIEW",
+        "POST": "COURSES_MANAGE",
+        "PUT": "COURSES_MANAGE",
+        "PATCH": "COURSES_MANAGE",
+        "DELETE": "COURSES_MANAGE",
+    }
+
+    def get_queryset(self):
+        user = self.request.user
+
+        if user.is_superuser:
+            return Assessment.objects.all()
+
+        if user.has_role_code("student"):
+            return Assessment.objects.filter(
+                course_offering__enrollments__student=user
+            ).distinct()
+
+        return Assessment.objects.filter(
+            course_offering__institution=user.institution
+        )
+
+
+class AssessmentResultViewSet(ModelViewSet):
+    serializer_class = AssessmentResultSerializer
+    permission_classes = [IsAuthenticated, HasPermissionCode]
+
+    required_permissions = {
+        "GET": "COURSES_VIEW",
+        "POST": "COURSES_MANAGE",
+        "PUT": "COURSES_MANAGE",
+        "PATCH": "COURSES_MANAGE",
+        "DELETE": "COURSES_MANAGE",
+    }
+
+    def get_queryset(self):
+        user = self.request.user
+
+        if user.is_superuser:
+            return AssessmentResult.objects.select_related(
+                "assessment", "enrollment"
+            )
+
+        if user.has_role_code("student"):
+            return AssessmentResult.objects.filter(
+                enrollment__student=user
+            )
+
+        return AssessmentResult.objects.filter(
+            enrollment__course_offering__institution=user.institution
+        )
+
+
+class CourseResultViewSet(ModelViewSet):
+    serializer_class = CourseResultSerializer
+    permission_classes = [IsAuthenticated, HasPermissionCode]
+
+    required_permissions = {
+        "GET": "COURSES_VIEW",
+        "POST": "COURSES_MANAGE",
+        "PUT": "COURSES_MANAGE",
+        "PATCH": "COURSES_MANAGE",
+        "DELETE": "COURSES_MANAGE",
+    }
+
+    def get_queryset(self):
+        user = self.request.user
+
+        if user.is_superuser:
+            return CourseResult.objects.all()
+
+        if user.has_role_code("student"):
+            return CourseResult.objects.filter(
+                enrollment__student=user
+            )
+
+        return CourseResult.objects.filter(
+            enrollment__course_offering__institution=user.institution
         )

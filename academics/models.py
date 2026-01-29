@@ -561,3 +561,143 @@ class AssignmentSubmission(models.Model):
 
     def __str__(self):
         return f"{self.student.full_name} → {self.assignment.title}"
+
+
+class Assessment(models.Model):
+    TYPE_CHOICES = (
+        ("ct", "Class Test"),
+        ("oral", "Oral"),
+        ("midterm", "Midterm"),
+        ("final", "Final"),
+    )
+
+    course_offering = models.ForeignKey(
+        CourseOffering,
+        on_delete=models.CASCADE,
+        related_name="assessments"
+    )
+
+    title = models.CharField(max_length=150)
+    description = models.TextField(blank=True, null=True)
+
+    type = models.CharField(
+        max_length=50,
+        choices=TYPE_CHOICES
+    )
+
+    assessment_date = models.DateField()
+
+    max_marks = models.DecimalField(
+        max_digits=5,
+        decimal_places=2
+    )
+
+    weight_percent = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        blank=True,
+        null=True
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    created_by = models.ForeignKey(
+        User,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="+"
+    )
+
+    updated_by = models.ForeignKey(
+        User,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="+"
+    )
+
+    class Meta:
+        db_table = "assessments"
+        ordering = ["assessment_date"]
+
+    def __str__(self):
+        return f"{self.title} | {self.course_offering}"
+
+
+class AssessmentResult(models.Model):
+    assessment = models.ForeignKey(
+        Assessment,
+        on_delete=models.CASCADE,
+        related_name="results"
+    )
+
+    enrollment = models.ForeignKey(
+        CourseEnrollment,
+        on_delete=models.CASCADE,
+        related_name="assessment_results"
+    )
+
+    marks_obtained = models.DecimalField(
+        max_digits=5,
+        decimal_places=2
+    )
+
+    remarks = models.TextField(blank=True, null=True)
+
+    graded_by = models.ForeignKey(
+        User,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="+"
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = "assessment_results"
+        unique_together = ("assessment", "enrollment")
+
+    def __str__(self):
+        return f"{self.enrollment} → {self.assessment}"
+
+
+class CourseResult(models.Model):
+    enrollment = models.OneToOneField(
+        CourseEnrollment,
+        on_delete=models.CASCADE,
+        related_name="final_result"
+    )
+
+    total_marks = models.DecimalField(
+        max_digits=6,
+        decimal_places=2
+    )
+
+    grade = models.CharField(max_length=10)
+    grade_point = models.DecimalField(
+        max_digits=3,
+        decimal_places=2,
+        blank=True,
+        null=True
+    )
+
+    result_status = models.CharField(
+        max_length=20,
+        choices=(
+            ("pass", "Pass"),
+            ("fail", "Fail"),
+            ("incomplete", "Incomplete"),
+        )
+    )
+
+    published_at = models.DateTimeField(blank=True, null=True)
+    remarks = models.TextField(blank=True, null=True)
+
+    class Meta:
+        db_table = "course_results"
+
+    def __str__(self):
+        return f"{self.enrollment} → {self.grade}"
