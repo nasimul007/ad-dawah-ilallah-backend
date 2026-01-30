@@ -1,15 +1,19 @@
+import uuid
+from datetime import date
+
 from django.utils.timezone import now
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.filters import SearchFilter, OrderingFilter
 
 from academics.models import AcademicTerm, Course, CourseOffering, CourseEnrollment, ClassRoutine, ClassSession, \
-    Attendance, Assignment, AssignmentSubmission, Assessment, AssessmentResult, CourseResult
+    Attendance, Assignment, AssignmentSubmission, Assessment, AssessmentResult, CourseResult, CertificateTemplate, \
+    Certificate
 from accounts.permissions import HasPermissionCode
 from .serializers import AcademicTermSerializer, CourseSerializer, CourseOfferingSerializer, \
     CourseEnrollmentSerializer, ClassRoutineSerializer, ClassSessionSerializer, \
     AttendanceSerializer, AssignmentSerializer, AssignmentSubmissionSerializer, AssessmentSerializer, \
-    AssessmentResultSerializer, CourseResultSerializer
+    AssessmentResultSerializer, CourseResultSerializer, CertificateTemplateSerializer, CertificateSerializer
 from .services import AcademicTermService
 
 
@@ -487,4 +491,53 @@ class CourseResultViewSet(ModelViewSet):
 
         return CourseResult.objects.filter(
             enrollment__course_offering__institution=user.institution
+        )
+
+
+class CertificateTemplateViewSet(ModelViewSet):
+    serializer_class = CertificateTemplateSerializer
+    permission_classes = [IsAuthenticated, HasPermissionCode]
+
+    required_permissions = {
+        "GET": "COURSES_VIEW",
+        "POST": "COURSES_MANAGE",
+        "PUT": "COURSES_MANAGE",
+        "PATCH": "COURSES_MANAGE",
+        "DELETE": "COURSES_MANAGE",
+    }
+
+    queryset = CertificateTemplate.objects.all()
+
+
+class CertificateViewSet(ModelViewSet):
+    serializer_class = CertificateSerializer
+    permission_classes = [IsAuthenticated, HasPermissionCode]
+
+    required_permissions = {
+        "GET": "COURSES_VIEW",
+        "POST": "COURSES_MANAGE",
+        "PUT": "COURSES_MANAGE",
+        "PATCH": "COURSES_MANAGE",
+        "DELETE": "COURSES_MANAGE",
+    }
+
+    def get_queryset(self):
+        user = self.request.user
+
+        if user.is_superuser:
+            return Certificate.objects.all()
+
+        if user.has_role_code("student"):
+            return Certificate.objects.filter(student=user)
+
+        return Certificate.objects.filter(
+            course_offering__institution=user.institution
+        )
+
+    def perform_create(self, serializer):
+        certificate_no = f"CERT-{uuid.uuid4().hex[:10].upper()}"
+
+        serializer.save(
+            certificate_no=certificate_no,
+            issue_date=date.today()
         )

@@ -701,3 +701,86 @@ class CourseResult(models.Model):
 
     def __str__(self):
         return f"{self.enrollment} → {self.grade}"
+
+
+class CertificateTemplate(models.Model):
+    name = models.CharField(max_length=100)
+    description = models.TextField(blank=True, null=True)
+
+    template_file = models.ForeignKey(
+        FileUpload,
+        on_delete=models.CASCADE,
+        related_name="+"
+    )
+
+    is_active = models.BooleanField(default=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = "certificate_templates"
+
+    def __str__(self):
+        return self.name
+
+
+class Certificate(models.Model):
+    certificate_no = models.CharField(
+        max_length=50,
+        unique=True
+    )
+
+    student = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="certificates"
+    )
+
+    course_offering = models.ForeignKey(
+        CourseOffering,
+        on_delete=models.CASCADE,
+        related_name="certificates"
+    )
+
+    enrollment = models.OneToOneField(
+        CourseEnrollment,
+        on_delete=models.CASCADE,
+        related_name="certificate"
+    )
+
+    issue_date = models.DateField()
+
+    grade = models.CharField(
+        max_length=10,
+        blank=True,
+        null=True
+    )
+
+    remarks = models.TextField(blank=True, null=True)
+
+    template = models.ForeignKey(
+        CertificateTemplate,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True
+    )
+
+    file = models.ForeignKey(
+        FileUpload,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="+"
+    )
+
+    is_revoked = models.BooleanField(default=False)
+    revoked_at = models.DateTimeField(blank=True, null=True)
+    revoked_reason = models.TextField(blank=True, null=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = "certificates"
+
+    def __str__(self):
+        return f"{self.certificate_no} → {self.student.full_name}"

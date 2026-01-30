@@ -1,7 +1,8 @@
 from django.utils.timezone import now
 from rest_framework import serializers
 from academics.models import AcademicTerm, Course, CourseInstructor, CourseOffering, CourseEnrollment, ClassRoutine, \
-    ClassSession, Attendance, Assignment, AssignmentSubmission, Assessment, AssessmentResult, CourseResult
+    ClassSession, Attendance, Assignment, AssignmentSubmission, Assessment, AssessmentResult, CourseResult, \
+    CertificateTemplate, Certificate
 
 
 class AcademicTermSerializer(serializers.ModelSerializer):
@@ -348,3 +349,34 @@ class CourseResultSerializer(serializers.ModelSerializer):
     class Meta:
         model = CourseResult
         fields = "__all__"
+
+
+class CertificateTemplateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CertificateTemplate
+        fields = "__all__"
+
+
+class CertificateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Certificate
+        fields = "__all__"
+        read_only_fields = ("certificate_no", "created_at")
+
+    def validate(self, attrs):
+        enrollment = attrs.get("enrollment")
+
+        # Ensure final result exists and is pass
+        try:
+            result = enrollment.final_result
+        except CourseResult.DoesNotExist:
+            raise serializers.ValidationError(
+                "Final result not published for this enrollment."
+            )
+
+        if result.result_status != "pass":
+            raise serializers.ValidationError(
+                "Certificate can only be issued for passed students."
+            )
+
+        return attrs
