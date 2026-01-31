@@ -6,12 +6,11 @@ class Course(models.Model):
     """Main course model"""
     title = models.CharField(max_length=255)
     description = models.TextField(null=True, blank=True)
-    instructor = models.ForeignKey(
+    instructors = models.ManyToManyField(
         User,
-        on_delete=models.SET_NULL,
-        null=True,
         blank=True,
-        related_name="courses_taught"
+        related_name="courses_taught",
+        help_text="Users who teach this course",
     )
     thumbnail_url = models.CharField(max_length=500, null=True, blank=True)
     is_active = models.BooleanField(default=True)
@@ -26,6 +25,7 @@ class Course(models.Model):
         User,
         on_delete=models.SET_NULL,
         null=True,
+        blank=True,
         related_name="courses_created"
     )
     
@@ -100,7 +100,7 @@ class CourseContent(models.Model):
     duration_minutes = models.IntegerField(
         null=True,
         blank=True,
-        help_text="Duration in minutes (for video/audio)"
+        help_text="Duration in minutes (for video/audio)" 
     )
     
     # Ordering within the module

@@ -131,19 +131,19 @@ class LogoutView(APIView):
             {"detail": "Successfully logged out."},
             status=status.HTTP_200_OK
         )
-        
+         
         # Clear access token cookie
         response.delete_cookie(
             key='access_token',
             samesite='Lax',
-            secure=not settings.DEBUG,
+           
         )
         
         # Clear refresh token cookie
         response.delete_cookie(
             key='refresh_token',
             samesite='Lax',
-            secure=not settings.DEBUG,
+        
         )
         
         return response

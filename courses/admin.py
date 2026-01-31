@@ -4,10 +4,15 @@ from courses.models import Course, Module, CourseContent
 
 @admin.register(Course)
 class CourseAdmin(admin.ModelAdmin):
-    list_display = ('title', 'instructor', 'is_active', 'is_published', 'order', 'created_at')
+    list_display = ('title', 'instructors_list', 'is_active', 'is_published', 'order', 'created_at')
     list_filter = ('is_active', 'is_published', 'created_at')
     search_fields = ('title', 'description')
     ordering = ('order', '-created_at')
+
+    def instructors_list(self, obj):
+        return ", ".join(obj.instructors.values_list("full_name", flat=True))
+
+    instructors_list.short_description = "Instructors"
 
 
 @admin.register(Module)

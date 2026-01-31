@@ -27,7 +27,27 @@ SECRET_KEY = 'django-insecure-4k&u#mtd4wm-+%qcccmhf3-_-h5h17us4z0lp_8rn9^am)yop&
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
+# In local dev, it's common to hit the backend via different loopback hostnames
+# (localhost / 127.0.0.1 / 0.0.0.0). Keep this permissive in DEBUG only.
+if DEBUG:
+    ALLOWED_HOSTS = ["*"]
+
+CORS_ALLOW_CREDENTIALS = True
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "https://example.com",
+]
+
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "https://example.com",
+]
+
+
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / "media"
@@ -63,11 +83,16 @@ INSTALLED_APPS = [
     'rest_framework',
     'django_filters',
     'drf_spectacular',
+    'corsheaders',
 
     # Project apps
     'accounts',
     'forms',
     'courses',
+    'payments',
+    'enrollments',
+    'videos',
+    'funds',
 ]
 
 REST_FRAMEWORK = {
@@ -90,7 +115,15 @@ SIMPLE_JWT = {
     "AUTH_HEADER_TYPES": ("Bearer",),
 }
 
+# -----------------------------
+# Payments (SSLCOMMERZ)
+# -----------------------------
+SSLCOMMERZ_STORE_ID = config("SSLCOMMERZ_STORE_ID", default="")
+SSLCOMMERZ_STORE_PASS = config("SSLCOMMERZ_STORE_PASS", default="")
+SSLCOMMERZ_ISSANDBOX = config("SSLCOMMERZ_ISSANDBOX", cast=bool, default=True)
+
 MIDDLEWARE = [
+     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -160,3 +193,60 @@ STATICFILES_DIRS = [BASE_DIR / "static"]
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+# -----------------------------
+# Celery Configuration (Redis)
+# -----------------------------
+CELERY_BROKER_URL = config('CELERY_BROKER_URL', default='redis://localhost:6379/0')
+CELERY_RESULT_BACKEND = config('CELERY_RESULT_BACKEND', default='redis://localhost:6379/0')
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'UTC'
+
+# Celery Beat (Periodic Tasks)
+CELERY_BEAT_SCHEDULE = {
+    'cleanup-failed-uploads': {
+        'task': 'videos.tasks.cleanup_failed_uploads',
+        'schedule': 86400,  # Daily
+    },
+    'retry-failed-uploads': {
+        'task': 'videos.tasks.retry_failed_uploads',
+        'schedule': 3600,  # Hourly
+    },
+}
+
+
+# -----------------------------
+# AWS S3 / Object Storage
+# -----------------------------
+AWS_ACCESS_KEY_ID = config('AWS_ACCESS_KEY_ID', default='')
+AWS_SECRET_ACCESS_KEY = config('AWS_SECRET_ACCESS_KEY', default='')
+AWS_S3_BUCKET_NAME = config('AWS_S3_BUCKET_NAME', default='')
+AWS_S3_REGION_NAME = config('AWS_S3_REGION_NAME', default='us-east-1')
+# For S3-compatible services (Wasabi, R2, MinIO), set endpoint URL:
+AWS_S3_ENDPOINT_URL = config('AWS_S3_ENDPOINT_URL', default='')
+AWS_S3_PRESIGNED_EXPIRY = config('AWS_S3_PRESIGNED_EXPIRY', cast=int, default=3600)
+
+
+# -----------------------------
+# YouTube Data API
+# -----------------------------
+YOUTUBE_CLIENT_ID = config('YOUTUBE_CLIENT_ID', default='')
+YOUTUBE_CLIENT_SECRET = config('YOUTUBE_CLIENT_SECRET', default='')
+YOUTUBE_API_KEY = config('YOUTUBE_API_KEY', default='')  # Optional, for read-only ops
+
+
+# -----------------------------
+# Video Upload Settings
+# -----------------------------
+VIDEO_MAX_FILE_SIZE = config('VIDEO_MAX_FILE_SIZE', cast=int, default=2 * 1024 * 1024 * 1024)  # 2GB
+VIDEO_ALLOWED_EXTENSIONS = ['mp4', 'webm', 'mov', 'avi', 'mkv']
+VIDEO_ALLOWED_CONTENT_TYPES = [
+    'video/mp4',
+    'video/webm',
+    'video/quicktime',
+    'video/x-msvideo',
+    'video/x-matroska',
+]

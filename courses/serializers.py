@@ -9,6 +9,7 @@ class CourseContentSerializer(serializers.ModelSerializer):
         model = CourseContent
         fields = [
             "id",
+            "module",
             "title",
             "content_type",
             "content",
@@ -47,7 +48,7 @@ class CourseSerializer(serializers.ModelSerializer):
     """Serializer for Course with nested modules"""
     modules = ModuleSerializer(many=True, read_only=True)
     modules_count = serializers.IntegerField(source='modules.count', read_only=True)
-    instructor_name = serializers.CharField(source='instructor.full_name', read_only=True)
+    instructor_names = serializers.SerializerMethodField()
     
     class Meta:
         model = Course
@@ -55,8 +56,8 @@ class CourseSerializer(serializers.ModelSerializer):
             "id",
             "title",
             "description",
-            "instructor",
-            "instructor_name",
+            "instructors",
+            "instructor_names",
             "thumbnail_url",
             "is_active",
             "is_published",
@@ -67,13 +68,23 @@ class CourseSerializer(serializers.ModelSerializer):
             "updated_at",
             "created_by",
         ]
-        read_only_fields = ["id", "created_at", "updated_at", "instructor_name", "modules_count"]
+        read_only_fields = [
+            "id",
+            "created_at",
+            "updated_at",
+            "instructor_names",
+            "modules_count",
+            "created_by",
+        ]
+
+    def get_instructor_names(self, obj):
+        return list(obj.instructors.values_list("full_name", flat=True))
 
 
 class CourseListSerializer(serializers.ModelSerializer):
     """Lightweight serializer for course lists (without nested modules)"""
     modules_count = serializers.IntegerField(source='modules.count', read_only=True)
-    instructor_name = serializers.CharField(source='instructor.full_name', read_only=True)
+    instructor_names = serializers.SerializerMethodField()
     
     class Meta:
         model = Course
@@ -81,8 +92,8 @@ class CourseListSerializer(serializers.ModelSerializer):
             "id",
             "title",
             "description",
-            "instructor",
-            "instructor_name",
+            "instructors",
+            "instructor_names",
             "thumbnail_url",
             "is_active",
             "is_published",
@@ -91,5 +102,8 @@ class CourseListSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
         ]
-        read_only_fields = ["id", "created_at", "updated_at", "instructor_name", "modules_count"]
+        read_only_fields = ["id", "created_at", "updated_at", "instructor_names", "modules_count"]
+
+    def get_instructor_names(self, obj):
+        return list(obj.instructors.values_list("full_name", flat=True))
 

@@ -27,6 +27,10 @@ class CourseViewSet(viewsets.ModelViewSet):
         if self.action == 'list':
             return CourseListSerializer
         return CourseSerializer
+
+    def perform_create(self, serializer):
+        # created_by should be set automatically from the authenticated user
+        serializer.save(created_by=self.request.user)
     
     @action(detail=True, methods=['get'])
     def modules(self, request, pk=None):

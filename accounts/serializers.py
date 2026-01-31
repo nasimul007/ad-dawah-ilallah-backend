@@ -36,6 +36,7 @@ class UserSerializer(serializers.ModelSerializer):
         }
 
     def create(self, validated_data):
+        request = self.context.get("request")
         roles = validated_data.pop("roles", [])
         password = validated_data.pop("password", None)
 
@@ -45,8 +46,30 @@ class UserSerializer(serializers.ModelSerializer):
             user.set_password(password)
             user.save()
 
-        if roles:
-            user.roles.set(roles)
+        # Only authenticated users with USER_MANAGEMENT permission can assign roles.
+        # Otherwise, force the created user to be a Student (role id=2).
+        can_assign_roles = (
+            request is not None
+            and getattr(request, "user", None) is not None
+            and request.user.is_authenticated
+            and request.user.has_permission_code("USER_MANAGEMENT")
+        )
+
+        if can_assign_roles:
+            # If admin didn't send roles, default to Student.
+            if not roles:
+                student_role = Role.objects.filter(pk=2).first()
+                if student_role:
+                    roles = [student_role]
+        else:
+            student_role = Role.objects.filter(pk=2).first()
+            if not student_role:
+                raise serializers.ValidationError(
+                    {"roles": "Student role (id=2) is missing. Please seed roles first."}
+                )
+            roles = [student_role]
+
+        user.roles.set(roles)
 
         return user
 
