@@ -163,5 +163,38 @@
       "created_at": "2025-12-02T00:00:00Z",
       "updated_at": "2025-12-02T00:00:00Z"
     }
+  },
+  {
+    "model": "accounts.permission",
+    "pk": 16,
+    "fields": {
+      "code": "INSTITUTION_MANAGE",
+      "module": "institution",
+      "description": "Create, update, deactivate institutions and manage institution structure",
+      "created_at": "2025-12-02T00:00:00Z",
+      "updated_at": "2025-12-02T00:00:00Z"
+    }
+  },
+  {
+    "model": "accounts.permission",
+    "pk": 17,
+    "fields": {
+      "code": "ACADEMIC_TERM_VIEW",
+      "module": "academics",
+      "description": "View academic terms",
+      "created_at": "2026-01-17T00:00:00Z",
+      "updated_at": "2026-01-17T00:00:00Z"
+    }
+  },
+  {
+    "model": "accounts.permission",
+    "pk": 18,
+    "fields": {
+      "code": "ACADEMIC_TERM_MANAGE",
+      "module": "academics",
+      "description": "Create, Update and Delete academic terms",
+      "created_at": "2026-01-17T00:00:00Z",
+      "updated_at": "2026-01-17T00:00:00Z"
+    }
   }
 ]

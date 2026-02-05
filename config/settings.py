@@ -87,7 +87,10 @@ INSTALLED_APPS = [
 
     # Project apps
     'accounts',
+    'academics',
+    'institutions',
     'forms',
+    'files',
     'courses',
     'payments',
     'enrollments',

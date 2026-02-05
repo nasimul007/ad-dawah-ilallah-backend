@@ -1,6 +1,9 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
+from django.utils.text import slugify
+
 from accounts.manager import UserManager
+from institutions.models import Institution
 
 
 class User(AbstractBaseUser, PermissionsMixin):
@@ -31,6 +34,14 @@ class User(AbstractBaseUser, PermissionsMixin):
         "Role",
         blank=True,
         related_name="users",
+    )
+
+    institution = models.ForeignKey(
+        Institution,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="users"
     )
 
     created_at = models.DateTimeField(auto_now_add=True)
@@ -68,9 +79,13 @@ class User(AbstractBaseUser, PermissionsMixin):
 
         return self.roles.filter(permissions__code=code).exists()
 
+    def has_role_code(self, role_code: str) -> bool:
+        return self.roles.filter(name=role_code).exists()
+
 
 class Role(models.Model):
     name = models.CharField(max_length=50, unique=True)
+    code = models.CharField(max_length=50, unique=True, editable=False)
     description = models.TextField(null=True, blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
@@ -82,6 +97,11 @@ class Role(models.Model):
         blank=True,
         related_name="roles",
     )
+
+    def save(self, *args, **kwargs):
+        # Auto-generate code from name
+        self.code = slugify(self.name).replace("-", "_")
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.name
