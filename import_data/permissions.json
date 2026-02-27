@@ -1,200 +1,46 @@
 [
   {
     "model": "accounts.permission",
-    "pk": 1,
+    "pk": 100,
     "fields": {
-      "code": "SYSTEM_VIEW_AUDIT_LOGS",
-      "module": "system",
-      "description": "View audit logs and sensitive reports",
-      "created_at": "2025-12-02T00:00:00Z",
-      "updated_at": "2025-12-02T00:00:00Z"
+      "code": "PRINT_ORDER_CREATE",
+      "module": "Prints",
+      "description": "Can create print orders",
+      "created_at": "2026-02-22T00:00:00Z",
+      "updated_at": "2026-02-22T00:00:00Z"
     }
   },
   {
     "model": "accounts.permission",
-    "pk": 2,
+    "pk": 101,
     "fields": {
-      "code": "USER_MANAGEMENT",
-      "module": "Users",
-      "description": "User Create, Update, Delete, List, Details",
-      "created_at": "2025-12-02T00:00:00Z",
-      "updated_at": "2025-12-02T00:00:00Z"
+      "code": "PRINT_ORDER_VIEW_OWN",
+      "module": "Prints",
+      "description": "Can view own print orders",
+      "created_at": "2026-02-22T00:00:00Z",
+      "updated_at": "2026-02-22T00:00:00Z"
     }
   },
   {
     "model": "accounts.permission",
-    "pk": 3,
+    "pk": 102,
     "fields": {
-      "code": "BILLING_VIEW",
-      "module": "Billing",
-      "description": "View billing information and invoices",
-      "created_at": "2025-12-02T00:00:00Z",
-      "updated_at": "2025-12-02T00:00:00Z"
+      "code": "PRINT_ORDER_VIEW_PRINTER",
+      "module": "Prints",
+      "description": "Can view orders for their assigned printer",
+      "created_at": "2026-02-22T00:00:00Z",
+      "updated_at": "2026-02-22T00:00:00Z"
     }
   },
   {
     "model": "accounts.permission",
-    "pk": 4,
+    "pk": 103,
     "fields": {
-      "code": "BILLING_MANAGE_INVOICES",
-      "module": "Billing",
-      "description": "Create and update invoices",
-      "created_at": "2025-12-02T00:00:00Z",
-      "updated_at": "2025-12-02T00:00:00Z"
-    }
-  },
-  {
-    "model": "accounts.permission",
-    "pk": 5,
-    "fields": {
-      "code": "BILLING_RECORD_PAYMENTS",
-      "module": "Billing",
-      "description": "Record and manage payments",
-      "created_at": "2025-12-02T00:00:00Z",
-      "updated_at": "2025-12-02T00:00:00Z"
-    }
-  },
-  {
-    "model": "accounts.permission",
-    "pk": 6,
-    "fields": {
-      "code": "COURSES_VIEW",
-      "module": "courses",
-      "description": "View courses and offerings",
-      "created_at": "2025-12-02T00:00:00Z",
-      "updated_at": "2025-12-02T00:00:00Z"
-    }
-  },
-  {
-    "model": "accounts.permission",
-    "pk": 7,
-    "fields": {
-      "code": "COURSES_MANAGE",
-      "module": "courses",
-      "description": "Create/update/delete courses",
-      "created_at": "2025-12-02T00:00:00Z",
-      "updated_at": "2025-12-02T00:00:00Z"
-    }
-  },
-  {
-    "model": "accounts.permission",
-    "pk": 8,
-    "fields": {
-      "code": "COURSES_OFFER",
-      "module": "courses",
-      "description": "Offer new course batches/sections",
-      "created_at": "2025-12-02T00:00:00Z",
-      "updated_at": "2025-12-02T00:00:00Z"
-    }
-  },
-  {
-    "model": "accounts.permission",
-    "pk": 9,
-    "fields": {
-      "code": "CLASS_MANAGE",
-      "module": "classes",
-      "description": "Manage class schedules, upload materials for classes and courses",
-      "created_at": "2025-12-02T00:00:00Z",
-      "updated_at": "2025-12-02T00:00:00Z"
-    }
-  },
-  {
-    "model": "accounts.permission",
-    "pk": 10,
-    "fields": {
-      "code": "CLASS_MATERIALS_MANAGE",
-      "module": "materials",
-      "description": "Upload materials for classes and courses",
-      "created_at": "2025-12-02T00:00:00Z",
-      "updated_at": "2025-12-02T00:00:00Z"
-    }
-  },
-  {
-    "model": "accounts.permission",
-    "pk": 11,
-    "fields": {
-      "code": "EXAM_MANAGE",
-      "module": "exams",
-      "description": "Create, update, view and manage exams/assessments",
-      "created_at": "2025-12-02T00:00:00Z",
-      "updated_at": "2025-12-02T00:00:00Z"
-    }
-  },
-  {
-    "model": "accounts.permission",
-    "pk": 12,
-    "fields": {
-      "code": "ATTENDANCE_MANAGE",
-      "module": "attendance",
-      "description": "Mark attendance for classes, View attendance records",
-      "created_at": "2025-12-02T00:00:00Z",
-      "updated_at": "2025-12-02T00:00:00Z"
-    }
-  },
-  {
-    "model": "accounts.permission",
-    "pk": 13,
-    "fields": {
-      "code": "ASSIGNMENTS_MANAGE",
-      "module": "assignments",
-      "description": "Create, Update, Delete, View assignments and HWs",
-      "created_at": "2025-12-02T00:00:00Z",
-      "updated_at": "2025-12-02T00:00:00Z"
-    }
-  },
-  {
-    "model": "accounts.permission",
-    "pk": 14,
-    "fields": {
-      "code": "ASSIGNMENTS_GRADE",
-      "module": "assignments",
-      "description": "Grade assignments and homework",
-      "created_at": "2025-12-02T00:00:00Z",
-      "updated_at": "2025-12-02T00:00:00Z"
-    }
-  },
-  {
-    "model": "accounts.permission",
-    "pk": 15,
-    "fields": {
-      "code": "EXAMS_GRADE",
-      "module": "exams",
-      "description": "Grade exams/assessments",
-      "created_at": "2025-12-02T00:00:00Z",
-      "updated_at": "2025-12-02T00:00:00Z"
-    }
-  },
-  {
-    "model": "accounts.permission",
-    "pk": 16,
-    "fields": {
-      "code": "INSTITUTION_MANAGE",
-      "module": "institution",
-      "description": "Create, update, deactivate institutions and manage institution structure",
-      "created_at": "2025-12-02T00:00:00Z",
-      "updated_at": "2025-12-02T00:00:00Z"
-    }
-  },
-  {
-    "model": "accounts.permission",
-    "pk": 17,
-    "fields": {
-      "code": "ACADEMIC_TERM_VIEW",
-      "module": "academics",
-      "description": "View academic terms",
-      "created_at": "2026-01-17T00:00:00Z",
-      "updated_at": "2026-01-17T00:00:00Z"
-    }
-  },
-  {
-    "model": "accounts.permission",
-    "pk": 18,
-    "fields": {
-      "code": "ACADEMIC_TERM_MANAGE",
-      "module": "academics",
-      "description": "Create, Update and Delete academic terms",
-      "created_at": "2026-01-17T00:00:00Z",
-      "updated_at": "2026-01-17T00:00:00Z"
+      "code": "PRINT_ORDER_MANAGE",
+      "module": "Prints",
+      "description": "Can manage all print orders",
+      "created_at": "2026-02-22T00:00:00Z",
+      "updated_at": "2026-02-22T00:00:00Z"
     }
   }
 ]

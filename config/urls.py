@@ -22,13 +22,11 @@ from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, Spec
 urlpatterns = [
     path('admin/', admin.site.urls),
     path("api/accounts/", include("accounts.urls")),
-    path("api/academics/", include("academics.urls")),
-    path("api/forms/", include("forms.urls")),
-    path("api/courses/", include("courses.urls")),
+    path("api/varsity/", include("varsity.urls")),
+    path("api/prints/", include("prints.urls")),
     path("api/payments/", include("payments.urls")),
-    path("api/enrollments/", include("enrollments.urls")),
-    path("api/videos/", include("videos.urls")),
-    path("api/funds/", include("funds.urls")),
+
+
 
     # swagger api docs:
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),

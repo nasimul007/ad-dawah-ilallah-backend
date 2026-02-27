@@ -2,7 +2,7 @@ import uuid
 
 from django.conf import settings
 from django.db import transaction
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
 from django.utils import timezone
 from rest_framework import status, viewsets
@@ -10,24 +10,163 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from courses.models import Course
-from enrollments.models import Enrollment, EnrollmentKind, EnrollmentStatus
+from prints.models import PrintOrder
 from payments.models import PaymentKind, PaymentStatus, PaymentTransaction
 from payments.serializers import CheckoutSerializer, PaymentTransactionSerializer
 from payments.sslcommerz import get_sslcommerz_client
 
+FRONTEND_URL = getattr(settings, "FRONTEND_URL", "http://localhost:3000")
 
-def _new_tran_id() -> str:
-    # SSLCOMMERZ accepts a string tran_id; keep it short & unique.
-    return uuid.uuid4().hex.upper()
 
+# ──────────────────────────────────────────────────────────────────────────────
+# Helpers
+# ──────────────────────────────────────────────────────────────────────────────
+
+def _flatten_payload(request_data) -> dict:
+    """
+    DRF QueryDict wraps each value in a list.
+    SSLCommerz always sends single-value POST fields — flatten safely.
+    """
+    return {
+        k: v[0] if isinstance(v, list) and len(v) == 1 else v
+        for k, v in request_data.items()
+    }
+
+
+def _update_from_payload(payment: PaymentTransaction, payload: dict):
+    """Persist raw SSLCommerz callback fields onto the payment record."""
+    payment.callback_payload    = payload
+    payment.val_id              = payload.get("val_id")          or payment.val_id
+    payment.bank_tran_id        = payload.get("bank_tran_id")    or payment.bank_tran_id
+    payment.card_type           = payload.get("card_type")       or payment.card_type
+    payment.store_amount        = payload.get("store_amount")    or payment.store_amount
+    payment.verify_sign         = payload.get("verify_sign")     or payment.verify_sign
+    payment.verify_sign_sha2    = payload.get("verify_sign_sha2") or payment.verify_sign_sha2
+    payment.risk_level          = payload.get("risk_level")      or payment.risk_level
+    payment.risk_title          = payload.get("risk_title")      or payment.risk_title
+
+
+def _validate_and_finalize(payment: PaymentTransaction, payload: dict):
+    """
+    Full validation pipeline per SSLCommerz docs:
+      1. Hash / IPN signature check
+      2. Call Order Validation API with val_id
+      3. Cross-check amount against DB (tamper prevention)
+      4. Cross-check tran_id (tamper prevention)
+      5. Idempotency guard — skip if already SUCCESS
+      6. Persist status atomically
+    Returns (success: bool, message: str)
+    """
+    sslcz = get_sslcommerz_client()
+
+    # ── 1. Hash validation ────────────────────────────────────────────────────
+    if not sslcz.hash_validate_ipn(payload):
+        payment.status = PaymentStatus.INVALID
+        _update_from_payload(payment, payload)
+        payment.save(update_fields=["status", "callback_payload", "updated_at"])
+        return False, "Hash validation failed."
+
+    _update_from_payload(payment, payload)
+
+    # ── 2. Extract val_id ─────────────────────────────────────────────────────
+    val_id = (
+        payload.get("val_id")
+        or payload.get("valId")
+        or payload.get("valID")
+        or payment.val_id
+    )
+    if not val_id:
+        payment.status = PaymentStatus.INVALID
+        payment.save(update_fields=["status", "callback_payload", "updated_at"])
+        return False, "Missing val_id."
+
+    # ── 3. Call Order Validation API ──────────────────────────────────────────
+    validation_resp = sslcz.validationTransactionOrder(val_id)
+    payment.validation_response = validation_resp
+    ssl_status = str(
+        (validation_resp or {}).get("status")
+        or payload.get("status")
+        or ""
+    ).upper()
+
+    # ── 4. Amount cross-check (required by SSLCommerz security docs) ──────────
+    try:
+        validated_amount = float(
+            (validation_resp or {}).get("amount")
+            or payload.get("amount")
+            or 0
+        )
+        expected_amount = float(payment.amount)
+        # Allow ±1 BDT tolerance for currency-conversion rounding
+        if abs(validated_amount - expected_amount) > 1.0:
+            payment.status = PaymentStatus.INVALID
+            payment.save(update_fields=[
+                "status", "validation_response", "callback_payload", "updated_at"
+            ])
+            return False, f"Amount mismatch: expected {expected_amount}, got {validated_amount}."
+    except (TypeError, ValueError):
+        pass  # unparseable amount — let status drive the outcome
+
+    # ── 5. tran_id cross-check ────────────────────────────────────────────────
+    returned_tran_id = (
+        (validation_resp or {}).get("tran_id")
+        or payload.get("tran_id")
+    )
+    if returned_tran_id and returned_tran_id != payment.tran_id:
+        payment.status = PaymentStatus.INVALID
+        payment.save(update_fields=[
+            "status", "validation_response", "updated_at"
+        ])
+        return False, "Transaction ID mismatch."
+
+    # ── 6. Persist outcome atomically ─────────────────────────────────────────
+    with transaction.atomic():
+        # Idempotency: IPN + success callback can both arrive; process only once
+        if payment.status == PaymentStatus.SUCCESS:
+            return True, "Already processed."
+
+        if ssl_status in {"VALID", "VALIDATED"}:
+            payment.status = PaymentStatus.SUCCESS
+            payment.paid_at = timezone.now()
+
+            # ── Fulfillment hooks (uncomment as needed) ──────────────────────
+            # if payment.print_order:
+            #     payment.print_order.status = "PAID"
+            #     payment.print_order.save(update_fields=["status"])
+            #
+            # Enrollment example:
+            # Enrollment.objects.get_or_create(
+            #     user=payment.user,
+            #     course=payment.course,
+            #     defaults={"status": EnrollmentStatus.ACTIVE},
+            # )
+
+        elif ssl_status == "FAILED":
+            payment.status = PaymentStatus.FAILED
+        elif ssl_status == "CANCELLED":
+            payment.status = PaymentStatus.CANCELLED
+        else:
+            payment.status = PaymentStatus.FAILED
+
+        payment.save(update_fields=[
+            "status", "paid_at",
+            "val_id", "bank_tran_id", "card_type", "store_amount",
+            "verify_sign", "verify_sign_sha2", "risk_level", "risk_title",
+            "callback_payload", "validation_response", "updated_at",
+        ])
+
+    return payment.status == PaymentStatus.SUCCESS, payment.status
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Checkout
+# ──────────────────────────────────────────────────────────────────────────────
 
 class CheckoutView(APIView):
     """
-    Start an SSLCOMMERZ checkout session for a course purchase or subscription.
-    Returns the GatewayPageURL to redirect the user.
+    Authenticated endpoint — frontend calls this to start a payment session.
+    Returns GatewayPageURL; frontend redirects the user there.
     """
-
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
@@ -35,256 +174,185 @@ class CheckoutView(APIView):
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
 
-        course = None
-        if "course_id" in data:
-            course = get_object_or_404(Course, id=data["course_id"])
-        if course is None:
+        print_order = None
+        if "print_order_id" in data:
+            print_order = get_object_or_404(
+                PrintOrder, id=data["print_order_id"]
+            )
+
+        if print_order is None:
             return Response(
-                {"detail": "course_id is required to create an enrollment after payment."},
+                {"detail": "print_order_id is required."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        tran_id = _new_tran_id()
-
-        payment = PaymentTransaction.objects.create(
-            user=request.user,
-            course=course,
-            kind=PaymentKind.ONE_TIME if data["kind"] == "ONE_TIME" else PaymentKind.SUBSCRIPTION,
-            amount=data["amount"],
-            currency=data.get("currency", "BDT"),
-            tran_id=tran_id,
-            status=PaymentStatus.INITIATED,
-            meta={
-                "subscription_plan": data.get("subscription_plan", ""),
-                "subscription_months": data.get("subscription_months"),
-            },
-        )
-
-        # Build callback URLs that SSLCOMMERZ will call
-        success_url = request.build_absolute_uri(reverse("payments:ssl-success"))
-        fail_url = request.build_absolute_uri(reverse("payments:ssl-fail"))
-        cancel_url = request.build_absolute_uri(reverse("payments:ssl-cancel"))
-
-        # Customer details (SSLCOMMERZ requires these fields)
-        cus_name = getattr(request.user, "full_name", "") or getattr(request.user, "username", "customer")
-        cus_email = getattr(request.user, "email", "") or "no-reply@example.com"
-        cus_phone = getattr(request.user, "phone", "") or "01700000000"
-        cus_add1 = getattr(request.user, "address", "") or "N/A"
-
-        product_name = course.title if course else "Subscription"
-
-        post_body = {
-            "total_amount": float(payment.amount),
-            "currency": payment.currency,
-            "tran_id": payment.tran_id,
-            "success_url": success_url,
-            "fail_url": fail_url,
-            "cancel_url": cancel_url,
-            "emi_option": 0,
-            "cus_name": cus_name,
-            "cus_email": cus_email,
-            "cus_phone": cus_phone,
-            "cus_add1": cus_add1,
-            "cus_city": "Dhaka",
-            "cus_country": "Bangladesh",
-            "shipping_method": "NO",
-            "multi_card_name": "",
-            "num_of_item": 1,
-            "product_name": product_name,
-            "product_category": "Course",
-            "product_profile": "general",
-        }
-
+        from .utils import create_payment_session
         try:
-            sslcz = get_sslcommerz_client()
-            init_resp = sslcz.createSession(post_body)
+            payment = create_payment_session(
+                request=request,
+                print_order=print_order,
+                amount=data["amount"],
+                kind=data["kind"],
+                currency=data.get("currency", "BDT"),
+                meta={
+                    "subscription_plan":   data.get("subscription_plan", ""),
+                    "subscription_months": data.get("subscription_months"),
+                },
+            )
         except Exception as exc:
-            payment.status = PaymentStatus.FAILED
-            payment.init_response = {"error": str(exc)}
-            payment.save(update_fields=["status", "init_response", "updated_at"])
             return Response(
                 {"detail": "Failed to create SSLCOMMERZ session.", "error": str(exc)},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
-        payment.init_response = init_resp
-        payment.sessionkey = init_resp.get("sessionkey") or init_resp.get("Sessionkey") or init_resp.get("session_key")
-        payment.gateway_page_url = init_resp.get("GatewayPageURL")
-        payment.status = PaymentStatus.PENDING
-        payment.save(
-            update_fields=["init_response", "sessionkey", "gateway_page_url", "status", "updated_at"]
-        )
-
         if not payment.gateway_page_url:
-            payment.status = PaymentStatus.FAILED
-            payment.save(update_fields=["status", "updated_at"])
             return Response(
-                {"detail": "SSLCOMMERZ did not return GatewayPageURL.", "response": init_resp},
+                {
+                    "detail": "SSLCOMMERZ did not return GatewayPageURL.",
+                    "response": payment.init_response,
+                },
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        return Response(
-            {
-                "payment_id": payment.id,
-                "tran_id": payment.tran_id,
-                "gateway_page_url": payment.gateway_page_url,
-                "sessionkey": payment.sessionkey,
-            },
-            status=status.HTTP_200_OK,
-        )
+        return Response({
+            "payment_id":       payment.id,
+            "tran_id":          payment.tran_id,
+            "gateway_page_url": payment.gateway_page_url,
+            "sessionkey":       payment.sessionkey,
+        })
 
 
-class PaymentTransactionViewSet(viewsets.ReadOnlyModelViewSet):
-    serializer_class = PaymentTransactionSerializer
-    permission_classes = [IsAuthenticated]
-    lookup_field = "tran_id"
-
-    def get_queryset(self):
-        return PaymentTransaction.objects.filter(user=self.request.user).order_by("-created_at")
-
-
-def _update_from_payload(payment: PaymentTransaction, payload: dict):
-    payment.callback_payload = payload
-    payment.val_id = payload.get("val_id") or payment.val_id
-    payment.bank_tran_id = payload.get("bank_tran_id") or payment.bank_tran_id
-    payment.card_type = payload.get("card_type") or payment.card_type
-    payment.store_amount = payload.get("store_amount") or payment.store_amount
-    payment.verify_sign = payload.get("verify_sign") or payment.verify_sign
-    payment.verify_sign_sha2 = payload.get("verify_sign_sha2") or payment.verify_sign_sha2
-    payment.risk_level = payload.get("risk_level") or payment.risk_level
-    payment.risk_title = payload.get("risk_title") or payment.risk_title
-
-
-def _validate_and_finalize(payment: PaymentTransaction, payload: dict):
-    """
-    Validate the IPN/callback payload hash and then validate the transaction using val_id.
-    """
-    sslcz = get_sslcommerz_client()
-
-    if not sslcz.hash_validate_ipn(payload):
-        payment.status = PaymentStatus.INVALID
-        _update_from_payload(payment, payload)
-        payment.save(update_fields=["status", "callback_payload", "updated_at"])
-        return False, {"detail": "Hash validation failed."}
-
-    _update_from_payload(payment, payload)
-
-    val_id = payload.get("val_id") or payload.get("valId") or payload.get("valID") or payment.val_id
-    if not val_id:
-        payment.status = PaymentStatus.INVALID
-        payment.save(update_fields=["status", "callback_payload", "updated_at"])
-        return False, {"detail": "Missing val_id."}
-
-    validation_resp = sslcz.validationTransactionOrder(val_id)
-    payment.validation_response = validation_resp
-
-    ssl_status = (validation_resp or {}).get("status") or payload.get("status")
-
-    with transaction.atomic():
-        if str(ssl_status).upper() in {"VALID", "VALIDATED"}:
-            payment.status = PaymentStatus.SUCCESS
-            payment.paid_at = timezone.now()
-
-            # Create enrollment once (idempotent)
-            if payment.course_id and payment.enrollment_id is None:
-                enrollment_kind = (
-                    EnrollmentKind.SUBSCRIPTION
-                    if payment.kind == PaymentKind.SUBSCRIPTION
-                    else EnrollmentKind.ONE_TIME
-                )
-
-                enrollment, _created = Enrollment.objects.get_or_create(
-                    user=payment.user,
-                    course=payment.course,
-                    defaults={
-                        "kind": enrollment_kind,
-                        "status": EnrollmentStatus.ACTIVE,
-                    },
-                )
-                # If previously existed (maybe from earlier payment), ensure it is active and kind updated.
-                if enrollment.status != EnrollmentStatus.ACTIVE:
-                    enrollment.status = EnrollmentStatus.ACTIVE
-                    enrollment.save(update_fields=["status", "updated_at"])
-
-                payment.enrollment = enrollment
-        else:
-            payment.status = PaymentStatus.FAILED
-
-        payment.save(
-            update_fields=[
-                "status",
-                "paid_at",
-                "enrollment",
-                "val_id",
-                "bank_tran_id",
-                "card_type",
-                "store_amount",
-                "verify_sign",
-                "verify_sign_sha2",
-                "risk_level",
-                "risk_title",
-                "callback_payload",
-                "validation_response",
-                "updated_at",
-            ]
-        )
-
-    return True, {"detail": "Payment validated.", "status": payment.status, "enrollment_id": payment.enrollment_id}
-
+# ──────────────────────────────────────────────────────────────────────────────
+# SSLCommerz browser callbacks — validate then redirect browser to frontend
+# ──────────────────────────────────────────────────────────────────────────────
 
 class SSLCommerzSuccessView(APIView):
-    permission_classes = [AllowAny]
+    """SSLCommerz POSTs here after successful payment. Validate then redirect."""
+    permission_classes  = [AllowAny]
     authentication_classes = []
 
     def post(self, request):
-        payload = dict(request.data)
-        tran_id = payload.get("tran_id")
-        payment = get_object_or_404(PaymentTransaction, tran_id=tran_id)
-        ok, resp = _validate_and_finalize(payment, payload)
-        return Response(resp, status=status.HTTP_200_OK if ok else status.HTTP_400_BAD_REQUEST)
+        payload  = _flatten_payload(request.data)
+        tran_id  = payload.get("tran_id")
+
+        if not tran_id:
+            return redirect(f"{FRONTEND_URL}/your-prints?status=failed&reason=missing_tran_id")
+
+        payment  = get_object_or_404(PaymentTransaction, tran_id=tran_id)
+        ok, msg  = _validate_and_finalize(payment, payload)
+
+        if ok:
+            return redirect(f"{FRONTEND_URL}/your-prints?status=success&tran_id={tran_id}")
+        return redirect(f"{FRONTEND_URL}/your-prints?status=failed&tran_id={tran_id}&reason={msg}")
 
 
 class SSLCommerzFailView(APIView):
-    permission_classes = [AllowAny]
+    """SSLCommerz POSTs here when payment fails at the bank."""
+    permission_classes  = [AllowAny]
     authentication_classes = []
 
     def post(self, request):
-        payload = dict(request.data)
-        tran_id = payload.get("tran_id")
+        payload = _flatten_payload(request.data)
+        tran_id = payload.get("tran_id", "")
+
         payment = get_object_or_404(PaymentTransaction, tran_id=tran_id)
         _update_from_payload(payment, payload)
         payment.status = PaymentStatus.FAILED
         payment.save(update_fields=["status", "callback_payload", "updated_at"])
-        return Response({"detail": "Payment failed."}, status=status.HTTP_200_OK)
+
+        return redirect(f"{FRONTEND_URL}/your-prints?status=failed&tran_id={tran_id}")
 
 
 class SSLCommerzCancelView(APIView):
-    permission_classes = [AllowAny]
+    """SSLCommerz POSTs here when the user cancels."""
+    permission_classes  = [AllowAny]
     authentication_classes = []
 
     def post(self, request):
-        payload = dict(request.data)
-        tran_id = payload.get("tran_id")
+        payload = _flatten_payload(request.data)
+        tran_id = payload.get("tran_id", "")
+
         payment = get_object_or_404(PaymentTransaction, tran_id=tran_id)
         _update_from_payload(payment, payload)
         payment.status = PaymentStatus.CANCELLED
         payment.save(update_fields=["status", "callback_payload", "updated_at"])
-        return Response({"detail": "Payment cancelled."}, status=status.HTTP_200_OK)
 
+        return redirect(f"{FRONTEND_URL}/your-prints?status=cancelled&tran_id={tran_id}")
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# IPN — server-to-server, no browser involved, returns JSON
+# ──────────────────────────────────────────────────────────────────────────────
 
 class SSLCommerzIPNView(APIView):
     """
-    IPN endpoint (server-to-server) from SSLCOMMERZ.
+    Instant Payment Notification from SSLCommerz server.
+    This fires even if the user loses connection before the success redirect.
+    Always returns JSON (no redirect) — SSLCommerz doesn't read the response body.
     """
-
-    permission_classes = [AllowAny]
+    permission_classes  = [AllowAny]
     authentication_classes = []
 
     def post(self, request):
-        payload = dict(request.data)
+        payload = _flatten_payload(request.data)
         tran_id = payload.get("tran_id")
-        payment = get_object_or_404(PaymentTransaction, tran_id=tran_id)
-        ok, resp = _validate_and_finalize(payment, payload)
-        return Response(resp, status=status.HTTP_200_OK if ok else status.HTTP_400_BAD_REQUEST)
+
+        if not tran_id:
+            return Response(
+                {"detail": "Missing tran_id."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        payment    = get_object_or_404(PaymentTransaction, tran_id=tran_id)
+        ok, msg    = _validate_and_finalize(payment, payload)
+
+        return Response(
+            {"detail": msg},
+            status=status.HTTP_200_OK if ok else status.HTTP_400_BAD_REQUEST,
+        )
 
 
+# ──────────────────────────────────────────────────────────────────────────────
+# Frontend polling — called by frontend after redirect to verify real DB status
+# ──────────────────────────────────────────────────────────────────────────────
+
+class PaymentStatusView(APIView):
+    """
+    Frontend calls this after landing on /your-prints?status=success or /your-prints?status=failed
+    to get the authoritative payment status from the DB.
+    Never trust URL params alone.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, tran_id):
+        payment = get_object_or_404(
+            PaymentTransaction,
+            tran_id=tran_id,
+            user=request.user,   # users can only query their own
+        )
+        return Response({
+            "tran_id":        payment.tran_id,
+            "status":         payment.status,
+            "amount":         payment.amount,
+            "currency":       payment.currency,
+            "paid_at":        payment.paid_at,
+            "print_order_id": payment.print_order_id,
+            "risk_level":     payment.risk_level,
+            "risk_title":     payment.risk_title,
+            "card_type":      payment.card_type,
+        })
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# List / detail (read-only)
+# ──────────────────────────────────────────────────────────────────────────────
+
+class PaymentTransactionViewSet(viewsets.ReadOnlyModelViewSet):
+    serializer_class   = PaymentTransactionSerializer
+    permission_classes = [IsAuthenticated]
+    lookup_field       = "tran_id"
+
+    def get_queryset(self):
+        return PaymentTransaction.objects.filter(
+            user=self.request.user
+        ).order_by("-created_at")

@@ -28,23 +28,21 @@ class PaymentTransaction(models.Model):
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name="payment_transactions",
-    )
-    course = models.ForeignKey(
-        "courses.Course",
-        on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        related_name="payment_transactions",
-        help_text="Course being purchased (optional for subscription payments)",
     )
-    enrollment = models.ForeignKey(
-        "enrollments.Enrollment",
+
+    print_order = models.ForeignKey(
+        "prints.PrintOrder",
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
         related_name="payments",
-        help_text="Enrollment created after successful payment",
+        help_text="The print order associated with this payment",
     )
+
+
+
     kind = models.CharField(max_length=20, choices=PaymentKind.choices)
 
     amount = models.DecimalField(max_digits=12, decimal_places=2)

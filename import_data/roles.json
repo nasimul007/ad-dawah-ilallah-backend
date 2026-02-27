@@ -3,43 +3,46 @@
     "model": "accounts.role",
     "pk": 1,
     "fields": {
-      "name": "SUPER ADMIN",
-      "code": "super_admin",
-      "description": "Have all the access of the system",
+      "name": "Customer",
+      "code": "customer",
+      "description": "Regular customer who can place print orders",
       "permissions": [
-        1,
-        2,
-        3,
-        4,
-        5,
-        6,
-        7,
-        8,
-        9,
-        10,
-        11,
-        12,
-        13,
-        14,
-        15,
-        16,
-        17,
-        18
+        100,
+        101
       ],
-      "created_at": "2025-12-02T00:00:00Z",
-      "updated_at": "2025-12-02T00:00:00Z"
+      "created_at": "2026-02-22T00:00:00Z",
+      "updated_at": "2026-02-22T00:00:00Z"
     }
   },
   {
     "model": "accounts.role",
     "pk": 2,
     "fields": {
-      "name": "Student",
-      "code": "student",
-      "description": "Student",
-      "permissions": [],
-      "created_at": "2025-12-02T00:00:00Z",
-      "updated_at": "2025-12-02T00:00:00Z"
+      "name": "Print User",
+      "code": "print_user",
+      "description": "Printer operator who manages a specific printer",
+      "permissions": [
+        102
+      ],
+      "created_at": "2026-02-22T00:00:00Z",
+      "updated_at": "2026-02-22T00:00:00Z"
+    }
+  },
+  {
+    "model": "accounts.role",
+    "pk": 3,
+    "fields": {
+      "name": "Admin",
+      "code": "admin",
+      "description": "System administrator with full access",
+      "permissions": [
+        100,
+        101,
+        102,
+        103
+      ],
+      "created_at": "2026-02-22T00:00:00Z",
+      "updated_at": "2026-02-22T00:00:00Z"
     }
   }
 ]

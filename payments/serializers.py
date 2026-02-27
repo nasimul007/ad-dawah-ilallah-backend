@@ -9,8 +9,11 @@ class PaymentTransactionSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "user",
-            "course",
-            "enrollment",
+            # "course",
+            "print_order",
+            # "enrollment",
+
+
             "kind",
             "amount",
             "currency",
@@ -41,11 +44,12 @@ class PaymentTransactionSerializer(serializers.ModelSerializer):
             "store_amount",
             "risk_level",
             "risk_title",
-            "enrollment",
+            # "enrollment",
             "paid_at",
             "created_at",
             "updated_at",
         ]
+
 
 
 class CheckoutSerializer(serializers.Serializer):
@@ -53,9 +57,12 @@ class CheckoutSerializer(serializers.Serializer):
     Request body for starting a checkout session.
     """
 
-    course_id = serializers.IntegerField(required=False)
+    # course_id = serializers.IntegerField(required=False)
+    print_order_id = serializers.IntegerField(required=False)
+
     kind = serializers.ChoiceField(choices=["ONE_TIME", "SUBSCRIPTION"])
     amount = serializers.DecimalField(max_digits=12, decimal_places=2)
+
     currency = serializers.CharField(required=False, default="BDT")
 
     # subscription metadata (optional)

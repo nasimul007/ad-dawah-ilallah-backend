@@ -8,8 +8,8 @@ class PaymentTransactionAdmin(admin.ModelAdmin):
     list_display = (
         "tran_id",
         "user",
-        "course",
-        "enrollment",
+        "print_order",
+
         "kind",
         "amount",
         "currency",

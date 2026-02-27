@@ -34,6 +34,7 @@ if DEBUG:
     ALLOWED_HOSTS = ["*"]
 
 CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_ALL_ORIGINS = True
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
@@ -47,6 +48,14 @@ CSRF_TRUSTED_ORIGINS = [
     "https://example.com",
 ]
 
+CORS_ALLOW_HEADERS = [
+    
+    # your custom header
+    "x-anon-id",
+]
+
+
+FRONTEND_URL = config("FRONTEND_URL", default="http://localhost:3000")
 
 
 MEDIA_URL = '/media/'
@@ -62,9 +71,9 @@ DATABASES = {
         'PASSWORD': config('DB_PASSWORD'),
         'HOST': config('DB_HOST', default='localhost'),
         'PORT': config('DB_PORT', default='5432'),
-         "OPTIONS": {
-            "sslmode": "require",
-        },
+        #  "OPTIONS": {
+        #     "sslmode": "require",
+        # },
     }
 }
 
@@ -87,16 +96,11 @@ INSTALLED_APPS = [
 
     # Project apps
     'accounts',
-    'academics',
-    'institutions',
-    'forms',
-    'files',
-    'courses',
+    'varsity',
+    'prints',
     'payments',
-    'enrollments',
-    'videos',
-    'funds',
 ]
+
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
@@ -219,6 +223,16 @@ CELERY_BEAT_SCHEDULE = {
         'schedule': 3600,  # Hourly
     },
 }
+
+
+# -----------------------------
+# Cloudflare R2 / S3 Compatible Storage
+# -----------------------------
+R2_ACCESS_KEY_ID = config('R2_ACCESS_KEY_ID', default='')
+R2_SECRET_ACCESS_KEY = config('R2_SECRET_ACCESS_KEY', default='')
+R2_ENDPOINT_URL = config('R2_ENDPOINT_URL', default='')
+R2_BUCKET_NAME = config('BUCKET_NAME', default='')  # User specified BUCKET_NAME in .env
+R2_PUBLIC_URL_BASE = config('R2_PUBLIC_URL_BASE', default='')
 
 
 # -----------------------------

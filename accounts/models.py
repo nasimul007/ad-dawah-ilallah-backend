@@ -3,7 +3,7 @@ from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from django.utils.text import slugify
 
 from accounts.manager import UserManager
-from institutions.models import Institution
+
 
 
 class User(AbstractBaseUser, PermissionsMixin):
@@ -16,15 +16,10 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     # Basic profile data
     full_name = models.CharField(max_length=150)
-    gender = models.CharField(max_length=10, null=True, blank=True)
-    date_of_birth = models.DateField(null=True, blank=True)
     profile_photo = models.CharField(max_length=255, null=True, blank=True)
+ 
 
-    address = models.TextField(null=True, blank=True)
-    emergency_contact_name = models.CharField(max_length=150, null=True, blank=True)
-    emergency_contact_phone = models.CharField(max_length=25, null=True, blank=True)
 
-    notes = models.TextField(null=True, blank=True)
 
     # Django-required fields
     is_active = models.BooleanField(default=True)
@@ -36,13 +31,6 @@ class User(AbstractBaseUser, PermissionsMixin):
         related_name="users",
     )
 
-    institution = models.ForeignKey(
-        Institution,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name="users"
-    )
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

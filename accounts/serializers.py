@@ -17,12 +17,9 @@ class UserSerializer(serializers.ModelSerializer):
             "full_name",
             "email",
             "phone",
-            "gender",
-            "date_of_birth",
-            "address",
+           
             "profile_photo",
-            "emergency_contact_name",
-            "emergency_contact_phone",
+          
             "roles",
             "is_active",
             "created_at",

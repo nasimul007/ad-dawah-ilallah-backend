@@ -15,15 +15,12 @@ class CustomPagination(PageNumberPagination):
         total_pages = math.ceil(total / page_size)
 
         return Response({
-            "data": data,
-            "meta": {
-                "total": total,
-                "page": self.page.number,
-                "page_size": page_size,
-                "total_pages": total_pages,
-            },
-            "links": {
+            "results": data,
+           
+                "count": total_pages,
+               
+           
                 "next": self.get_next_link(),
                 "prev": self.get_previous_link(),
             }
-        })
+        )

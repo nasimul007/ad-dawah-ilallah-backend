@@ -29,9 +29,13 @@ class LoginView(TokenObtainPairView):
         refresh_token = serializer.validated_data.get('refresh')
         user_data = serializer.validated_data.get('user')
         
-        # Create response with user data (without tokens in body)
+        # Create response with user data and tokens
         response = Response(
-            {"user": user_data},
+            {
+                "user": user_data,
+                "access": access_token,
+                "refresh": refresh_token,
+            },
             status=status.HTTP_200_OK
         )
         

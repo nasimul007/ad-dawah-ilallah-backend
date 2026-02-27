@@ -10,9 +10,10 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('courses', '0002_remove_course_instructor_course_instructors_and_more'),
+        # ('courses', '0002_remove_course_instructor_course_instructors_and_more'),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
+
 
     operations = [
         migrations.CreateModel(
@@ -41,7 +42,8 @@ class Migration(migrations.Migration):
                 ('paid_at', models.DateTimeField(blank=True, null=True)),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('updated_at', models.DateTimeField(auto_now=True)),
-                ('course', models.ForeignKey(blank=True, help_text='Course being purchased (optional for subscription payments)', null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='payment_transactions', to='courses.course')),
+                # ('course', models.ForeignKey(blank=True, help_text='Course being purchased (optional for subscription payments)', null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='payment_transactions', to='courses.course')),
+
                 ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='payment_transactions', to=settings.AUTH_USER_MODEL)),
             ],
             options={
